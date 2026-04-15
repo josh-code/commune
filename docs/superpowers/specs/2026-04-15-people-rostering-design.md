@@ -45,9 +45,11 @@ Extends Supabase `auth.users`.
 | `phone` | text | WhatsApp number (e.g. +27...) |
 | `photo_url` | text | Supabase Storage |
 | `role` | enum | `admin`, `team_leader`, `member`, `logistics` |
-| `status` | enum | `invited`, `active`, `inactive` |
+| `status` | enum | `invited`, `active`, `on_leave`, `left` |
+| `on_leave_until` | date | nullable — expected return date when `status = on_leave` |
 | `invite_token` | uuid | single-use, nulled after activation |
 | `invite_expires_at` | timestamp | 7-day expiry |
+| `family_id` | uuid | nullable FK → `families` |
 | `date_of_birth` | date | |
 | `gender` | enum | `male`, `female`, `prefer_not_to_say` |
 | `address` | text | optional |
@@ -61,7 +63,36 @@ Extends Supabase `auth.users`.
 | `created_at` | timestamp | |
 | `updated_at` | timestamp | |
 
-### 3.2 How People Enter the System
+**Member status rules:**
+- `invited` — created but not yet activated. No notifications sent.
+- `active` — fully onboarded. Eligible for rostering and notifications.
+- `on_leave` — temporarily away. Not rostered, no notifications. `on_leave_until` date is optional. Admin can manually move back to `active`.
+- `left` — permanently left. Hidden from rosters and all notifications. Profile retained for history.
+
+### 3.2 Family (`families` table)
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | uuid | |
+| `name` | text | e.g. "The Smith Family" |
+| `shared_address` | text | optional — family-level address |
+| `church_id` | uuid | |
+
+A profile's `family_id` links them to a family. Each profile can override with their own `address` field, or inherit from `families.shared_address` if their own address is blank.
+
+Family relationships are captured in a join table:
+
+**`family_members` table**
+
+| Field | Type | Notes |
+|---|---|---|
+| `profile_id` | uuid | |
+| `family_id` | uuid | |
+| `relationship` | enum | `head`, `spouse`, `child`, `other` |
+
+On a person's profile page, their family members are shown with relationship labels. Admin can create a family, add/remove members, and set relationships.
+
+### 3.3 How People Enter the System
 
 1. **Bulk CSV import** — admin uploads CSV, maps columns to profile fields, system creates profiles with `status = invited`. Roles may need manual assignment post-import. Parsed client-side using Papa Parse, batch-inserted via Supabase admin API.
 2. **Manual add** — admin fills a form to create a single profile.
@@ -69,12 +100,16 @@ Extends Supabase `auth.users`.
 
 On activation, the person sets a password, their `status` moves to `active`, and the invite token is nulled.
 
-### 3.3 Profile Editing
+### 3.4 Birthday Notifications
+
+A Supabase Edge Function runs daily. It checks `profiles.date_of_birth` for today's date (month + day match). For each match where `status = active`, a WhatsApp notification is sent to the admin(s): _"Today is [Name]'s birthday 🎂"_. Added to the notification triggers table with `type = birthday_reminder`.
+
+### 3.5 Profile Editing
 
 - Members can edit their own: name, photo, phone number, address, emergency contact.
 - Admin can edit all fields on any profile, including role, membership status, and private notes.
 
-### 3.4 Unavailability Calendar (`unavailability` table)
+### 3.6 Unavailability Calendar (`unavailability` table)
 
 | Field | Type | Notes |
 |---|---|---|
@@ -206,6 +241,19 @@ Additionally, a monthly "in charge" person is assigned per group:
 
 The monthly lead is displayed prominently on the Sunday School roster view.
 
+If the monthly lead is unavailable for a specific Sunday, admin can assign a fill-in for that service only:
+
+**`sunday_school_lead_fillins` table**
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | uuid | |
+| `monthly_lead_id` | uuid | FK → `sunday_school_monthly_leads` |
+| `service_id` | uuid | the specific Sunday being covered |
+| `fillin_profile_id` | uuid | FK → profiles |
+
+The roster view shows the fill-in person (not the monthly lead) for that Sunday, with a "Fill-in" badge.
+
 ---
 
 ## 6. Team-Specific Features
@@ -286,6 +334,7 @@ Assigned person receives a WhatsApp notification. Items can be marked fulfilled.
 | `deadline` | timestamp | movable by admin/team leader |
 | `sermon_title` | text | submitted by Preaching team |
 | `sermon_notes` | text | |
+| `default_bible_version` | text | e.g. "NIV", "ESV", "KJV" — applies to all verses unless overridden |
 | `worship_notes` | text | extra worship notes beyond setlist |
 | `sermon_submitted_at` | timestamp | |
 | `worship_submitted_at` | timestamp | |
@@ -301,9 +350,10 @@ Assigned person receives a WhatsApp notification. Items can be marked fulfilled.
 | `chapter` | int | |
 | `verse_start` | int | |
 | `verse_end` | int | nullable — single verse if null |
+| `version_override` | text | nullable — inherits `default_bible_version` from brief if blank |
 | `order` | int | |
 
-Bible book/chapter/verse structure stored as a static JSON file on the client. No external Bible API needed.
+Bible book/chapter/verse structure stored as a static JSON file on the client. No external Bible API needed. Supported versions include NIV, ESV, KJV, NKJV, NLT, AMP, MSG (editable list).
 
 **`brief_attachments` table** — presentations and files
 
@@ -322,9 +372,15 @@ Bible book/chapter/verse structure stored as a static JSON file on the client. N
 
 ## 7. Logistics — Inventory Management
 
-Not part of rostering. Accessible to users with `logistics` role and admins.
+Not part of rostering. Access is controlled by a `logistics` role assigned per-profile. Admins always have full access.
 
-**`inventory_categories` table** — Sound, Media, Music, Housekeeping, Furniture (editable)
+### 7.1 Access Control
+
+The `logistics` role on `profiles.role` grants read + write access to the inventory module. Admin can additionally approve/reject purchase requests and has an overview dashboard of all inventory. Regular `member` and `team_leader` roles have no access to this module.
+
+### 7.2 Categories & Items
+
+**`inventory_categories` table** — Sound, Media, Music, Housekeeping, Furniture (admin-editable, not hardcoded)
 
 **`inventory_items` table**
 
@@ -333,10 +389,18 @@ Not part of rostering. Accessible to users with `logistics` role and admins.
 | `id` | uuid | |
 | `category_id` | uuid | |
 | `name` | text | |
+| `description` | text | optional |
 | `serial_number` | text | optional |
-| `status` | enum | `available`, `checked_out`, `missing`, `decommissioned` |
+| `purchase_date` | date | optional |
+| `purchase_price` | numeric | optional |
+| `condition` | enum | `new`, `good`, `fair`, `poor` |
+| `status` | enum | `available`, `checked_out`, `missing`, `under_repair`, `decommissioned` |
 | `notes` | text | |
 | `church_id` | uuid | |
+| `created_by` | uuid | FK → profiles — who added the item |
+| `created_at` | timestamp | |
+
+### 7.3 Checkouts
 
 **`inventory_checkouts` table**
 
@@ -348,6 +412,10 @@ Not part of rostering. Accessible to users with `logistics` role and admins.
 | `checked_out_at` | timestamp | |
 | `expected_return` | date | optional |
 | `returned_at` | timestamp | nullable |
+| `purpose` | text | reason for checkout |
+| `checked_in_by` | uuid | who marked it returned |
+
+### 7.4 Purchase Requests
 
 **`purchase_requests` table**
 
@@ -356,19 +424,61 @@ Not part of rostering. Accessible to users with `logistics` role and admins.
 | `id` | uuid | |
 | `item_name` | text | |
 | `category_id` | uuid | |
+| `quantity` | int | |
+| `estimated_cost` | numeric | optional |
 | `requested_by` | uuid | |
 | `reason` | text | |
 | `status` | enum | `pending`, `approved`, `rejected`, `purchased` |
-| `reviewed_by` | uuid | |
+| `reviewed_by` | uuid | admin who approved/rejected |
 | `reviewed_at` | timestamp | |
+| `admin_notes` | text | admin's comment on the decision |
+| `purchased_at` | timestamp | nullable — set when item is actually bought |
 
-Items can be marked missing directly from the item detail page. Status changes are logged.
+Admin/Pastor sees all pending purchase requests in a dedicated overview panel and can approve, reject, or mark as purchased with a note.
+
+### 7.5 Audit Log
+
+Every create, edit, status change, checkout, or return on an inventory item is recorded:
+
+**`inventory_audit_log` table**
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | uuid | |
+| `item_id` | uuid | nullable (purchase requests have their own log) |
+| `purchase_request_id` | uuid | nullable |
+| `action` | enum | `created`, `edited`, `status_changed`, `checked_out`, `returned`, `marked_missing`, `decommissioned`, `purchase_requested`, `purchase_approved`, `purchase_rejected`, `purchase_completed` |
+| `performed_by` | uuid | FK → profiles |
+| `performed_at` | timestamp | |
+| `old_values` | jsonb | snapshot before change |
+| `new_values` | jsonb | snapshot after change |
+
+The item detail page shows a full chronological audit trail. This is read-only — logs are never edited or deleted.
 
 ---
 
 ## 8. Member Behaviour Metrics
 
-No new tables — computed from existing data as a database view (`member_stats`):
+### 8.1 Practice Attendance Tracking
+
+To support practice attendance metrics, a new table is needed:
+
+**`practice_attendance` table**
+
+| Field | Type | Notes |
+|---|---|---|
+| `id` | uuid | |
+| `poll_id` | uuid | FK → `practice_polls` (only for confirmed polls) |
+| `profile_id` | uuid | |
+| `attended` | boolean | |
+| `marked_by` | uuid | team leader who recorded attendance |
+| `marked_at` | timestamp | |
+
+After a practice session, the team leader marks attendance for their team members. This feeds into the metrics.
+
+### 8.2 Metrics View (`member_stats`)
+
+Computed from existing data as a database view — no separate storage:
 
 | Metric | Source |
 |---|---|
@@ -376,7 +486,9 @@ No new tables — computed from existing data as a database view (`member_stats`
 | Confirmed rate | confirmed ÷ total assigned |
 | Declined rate | declined ÷ total assigned |
 | No-response rate | pending ÷ total assigned |
-| Availability entries | count of `unavailability` rows |
+| Practice sessions invited | count of `practice_poll_options` for their team's confirmed polls |
+| Practice attendance rate | attended ÷ total practice sessions invited |
+| Availability entries set | count of `unavailability` rows — measures proactive engagement |
 
 Visible on each member's profile page (admin view) and on an admin summary dashboard — sortable table of all members by any metric.
 
@@ -440,6 +552,7 @@ All WhatsApp notifications are sent via 360dialog. **Only sent to users with `st
 | Brief overdue | Admin + Team Leaders | Projection brief for [Date] is overdue |
 | Practice poll created | Active team members | Vote on practice time for [Service Date] |
 | Practice date confirmed | Active team members | Practice confirmed [Date & Time] |
+| Birthday | Admin(s) | Today is [Name]'s birthday |
 
 **`notifications` table**
 

@@ -19,7 +19,7 @@ A church management and community platform for connecting members, organizing ev
 
 ```bash
 # Clone the repository
-git clone https://github.com/josh-code/commune.git
+git clone https://github.com/yourusername/commune.git
 
 # Navigate to the project directory
 cd commune

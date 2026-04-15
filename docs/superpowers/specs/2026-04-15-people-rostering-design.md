@@ -19,14 +19,24 @@ Commune is a church management platform (PWA — web + mobile-friendly) targetin
 
 ## 2. User Roles
 
+### 2.1 System Roles (`profiles.role`)
+
 | Role | Access |
 |---|---|
 | `admin` | Full access — all people, all teams, all rosters, all modules |
-| `team_leader` | Manages their own team(s) — roster, setlist, hospitality, practice polls, brief |
 | `member` | Views own schedule, confirms/declines, marks unavailability, edits own profile |
 | `logistics` | Access to Logistics/Inventory module only — not part of rostering |
 
-A person can hold only one system role. Team leadership is separate — a member can be a `team_leader` for Worship and a `member` everywhere else.
+A person holds exactly one system role. `team_leader` is **not** a system role — team leadership is determined per-team by `team_member_positions.team_role`.
+
+### 2.2 Team Role (`team_member_positions.team_role`)
+
+| Team Role | Access |
+|---|---|
+| `leader` | Manages their specific team — roster slots, setlist, hospitality, practice polls, projection brief |
+| `member` | Rostered member of the team — views team content, confirms/declines assignments |
+
+A person with `team_role = leader` in the Worship team has no elevated access outside that team. They retain their system role (`member`) everywhere else.
 
 ---
 
@@ -44,12 +54,11 @@ Extends Supabase `auth.users`.
 | `email` | text | unique |
 | `phone` | text | WhatsApp number (e.g. +27...) |
 | `photo_url` | text | Supabase Storage |
-| `role` | enum | `admin`, `team_leader`, `member`, `logistics` |
+| `role` | enum | `admin`, `member`, `logistics` |
 | `status` | enum | `invited`, `active`, `on_leave`, `left` |
 | `on_leave_until` | date | nullable — expected return date when `status = on_leave` |
 | `invite_token` | uuid | single-use, nulled after activation |
 | `invite_expires_at` | timestamp | 7-day expiry |
-| `family_id` | uuid | nullable FK → `families` |
 | `date_of_birth` | date | |
 | `gender` | enum | `male`, `female`, `prefer_not_to_say` |
 | `address` | text | optional |
@@ -78,7 +87,7 @@ Extends Supabase `auth.users`.
 | `shared_address` | text | optional — family-level address |
 | `church_id` | uuid | |
 
-A profile's `family_id` links them to a family. Each profile can override with their own `address` field, or inherit from `families.shared_address` if their own address is blank.
+A profile is linked to a family exclusively through the `family_members` join table — no `family_id` on `profiles` itself. Each profile can have their own `address` field, or inherit from `families.shared_address` if their own address is blank.
 
 Family relationships are captured in a join table:
 
@@ -132,7 +141,7 @@ Members set themselves as unavailable for any future date or date range. This is
 |---|---|
 | `id` | uuid |
 | `name` | text |
-| `type` | enum: `worship`, `hospitality`, `hosting`, `sound`, `media`, `communion`, `preaching`, `welcome`, `sunday_school_small`, `sunday_school_big` |
+| `type` | enum: `worship`, `hospitality`, `hosting`, `sound`, `media`, `communion`, `preaching`, `welcome`, `sunday_school_small_children`, `sunday_school_big_children` |
 | `church_id` | uuid |
 
 No default positions are seeded — admin creates all positions from scratch.
@@ -180,6 +189,11 @@ A person is on a team by virtue of being assigned at least one position in it.
 
 Multi-service Sundays (e.g. 9am + 11am) are out of scope for Phase 1 but the data model supports it — each service is an independent record.
 
+**Service status transitions:**
+- `draft` → admin is building the roster, not yet sent
+- `published` → roster sent, members confirming/declining
+- `completed` → admin manually marks complete after the service date. Any `roster_slots` still `pending` at this point are treated as `no_response` for metrics purposes (status field is not changed — the `completed` service status is the signal).
+
 ### 5.2 Roster Slots (`roster_slots` table)
 
 | Field | Type | Notes |
@@ -225,7 +239,7 @@ If `proposed_replacement_id` is null (open request), the swap request is visible
 
 ### 5.5 Sunday School Rostering
 
-Sunday School runs as two teams (`sunday_school_small`, `sunday_school_big`) using the same `roster_slots` system as all other teams.
+Sunday School runs as two teams (`sunday_school_small_children`, `sunday_school_big_children`) using the same `roster_slots` system as all other teams.
 
 Additionally, a monthly "in charge" person is assigned per group:
 
@@ -234,7 +248,7 @@ Additionally, a monthly "in charge" person is assigned per group:
 | Field | Type | Notes |
 |---|---|---|
 | `id` | uuid | |
-| `group` | enum | `small_children`, `big_children` |
+| `group` | enum | `sunday_school_small_children`, `sunday_school_big_children` |
 | `profile_id` | uuid | |
 | `month` | date | first day of the month |
 | `church_id` | uuid | |
@@ -376,7 +390,7 @@ Not part of rostering. Access is controlled by a `logistics` role assigned per-p
 
 ### 7.1 Access Control
 
-The `logistics` role on `profiles.role` grants read + write access to the inventory module. Admin can additionally approve/reject purchase requests and has an overview dashboard of all inventory. Regular `member` and `team_leader` roles have no access to this module.
+The `logistics` role on `profiles.role` grants read + write access to the inventory module. Admin can additionally approve/reject purchase requests and has an overview dashboard of all inventory. Regular `member` role profiles (regardless of team leadership) have no access to this module.
 
 ### 7.2 Categories & Items
 
@@ -486,7 +500,7 @@ Computed from existing data as a database view — no separate storage:
 | Confirmed rate | confirmed ÷ total assigned |
 | Declined rate | declined ÷ total assigned |
 | No-response rate | pending ÷ total assigned |
-| Practice sessions invited | count of `practice_poll_options` for their team's confirmed polls |
+| Practice sessions invited | count of confirmed `practice_polls` for their team (one poll = one session) |
 | Practice attendance rate | attended ÷ total practice sessions invited |
 | Availability entries set | count of `unavailability` rows — measures proactive engagement |
 

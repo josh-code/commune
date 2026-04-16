@@ -1,37 +1,42 @@
 # Commune
 
-A church management and community platform for connecting members, organizing events, and strengthening community bonds.
+A church management and rostering platform for mid-size churches.
 
-## Features
+## Production
 
-- Member management and profiles
-- Event scheduling and coordination
-- Community communication tools
-- Resource sharing and announcements
+**URL:** https://commune-alpha.vercel.app
 
-## Getting Started
+Hosted on Vercel. Auth and database via Supabase (Sydney region).
 
-### Prerequisites
-- Node.js (v16 or higher)
-- npm or yarn
-
-### Installation
+## Development
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/commune.git
-
-# Navigate to the project directory
-cd commune
-
-# Install dependencies
-npm install
+pnpm install
+supabase start    # requires Docker (or Colima: brew install colima && colima start)
+cp .env.example .env.local  # fill in keys from `supabase status`
+pnpm dev
 ```
 
-### Running the Application
+Local admin credentials (seeded): `admin@commune.local` / `commune-admin-dev`
+
+### Running tests
 
 ```bash
-npm run dev
+pnpm test           # unit tests (vitest)
+pnpm test:e2e       # end-to-end (playwright) — requires supabase running
+pnpm typecheck      # TypeScript check
+pnpm lint
+```
+
+### Deployment
+
+```bash
+# Push DB migrations to cloud
+supabase link --project-ref nmrcxvvxjwopoweucvje
+supabase db push
+
+# Deploy to Vercel
+vercel --prod
 ```
 
 ## Project Structure
@@ -39,19 +44,23 @@ npm run dev
 ```
 commune/
 ├── src/
-├── public/
+│   ├── app/
+│   │   ├── (auth)/          # login, activate pages
+│   │   └── (app)/           # dashboard, profile, admin
+│   ├── components/ui/       # shadcn/ui components
+│   ├── lib/
+│   │   ├── supabase/        # browser, server, middleware, admin clients
+│   │   ├── auth.ts          # session + role helpers
+│   │   └── invites.ts       # invite token logic
+│   └── proxy.ts             # route protection (Next.js 16)
+├── supabase/
+│   ├── migrations/          # SQL migrations
+│   └── seed.sql             # local dev seed
 ├── tests/
+│   ├── unit/                # vitest unit tests
+│   └── e2e/                 # playwright e2e tests
 └── docs/
+    └── superpowers/
+        ├── specs/           # design documents
+        └── plans/           # implementation plans
 ```
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Contact
-
-For questions or support, please reach out to the development team.

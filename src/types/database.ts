@@ -34,8 +34,43 @@ export type Database = {
   }
   public: {
     Tables: {
+      member_teams: {
+        Row: {
+          assigned_at: string
+          profile_id: string
+          team_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          profile_id: string
+          team_id: string
+        }
+        Update: {
+          assigned_at?: string
+          profile_id?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_teams_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
+          address: string | null
+          bio: string | null
           created_at: string
           email: string
           first_name: string
@@ -43,11 +78,14 @@ export type Database = {
           invite_expires_at: string | null
           invite_token: string | null
           last_name: string
+          phone: string | null
           role: Database["public"]["Enums"]["profile_role"]
           status: Database["public"]["Enums"]["profile_status"]
           updated_at: string
         }
         Insert: {
+          address?: string | null
+          bio?: string | null
           created_at?: string
           email: string
           first_name: string
@@ -55,11 +93,14 @@ export type Database = {
           invite_expires_at?: string | null
           invite_token?: string | null
           last_name: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
         }
         Update: {
+          address?: string | null
+          bio?: string | null
           created_at?: string
           email?: string
           first_name?: string
@@ -67,9 +108,31 @@ export type Database = {
           invite_expires_at?: string | null
           invite_token?: string | null
           last_name?: string
+          phone?: string | null
           role?: Database["public"]["Enums"]["profile_role"]
           status?: Database["public"]["Enums"]["profile_status"]
           updated_at?: string
+        }
+        Relationships: []
+      }
+      teams: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }
@@ -78,7 +141,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       profile_role: "admin" | "member" | "logistics"

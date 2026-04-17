@@ -13,6 +13,12 @@ export default async function InvitesPage() {
     <div>
       <h1 className="text-xl font-semibold text-slate-900 mb-6">Invite member</h1>
       <InviteForm teams={teams ?? []} />
+      <p className="mt-4 text-sm text-slate-500">
+        Have many members?{" "}
+        <a href="/admin/import" className="text-indigo-600 hover:text-indigo-800 font-medium">
+          Import via CSV
+        </a>
+      </p>
     </div>
   );
 }

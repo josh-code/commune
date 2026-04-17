@@ -38,6 +38,9 @@ Thumbs.db
 # Vercel
 .vercel
 
+# Visual brainstorming (superpowers)
+.superpowers/
+
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
@@ -51,6 +54,7 @@ supabase/.branches
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+.playwright-mcp/
 
 # Vitest
 coverage/

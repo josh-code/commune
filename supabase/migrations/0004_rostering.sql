@@ -119,3 +119,13 @@ ON CONFLICT (team_id, name) DO NOTHING;
 -- ── Drop member_teams ────────────────────────────────────────────────────────
 
 DROP TABLE IF EXISTS member_teams;
+
+-- ── Performance indexes ──────────────────────────────────────────────────────
+
+CREATE INDEX ON roster_slots (profile_id) WHERE profile_id IS NOT NULL;
+CREATE INDEX ON team_member_positions (team_id);
+CREATE INDEX ON services (date);
+CREATE INDEX ON services (status);
+CREATE INDEX ON swap_requests (roster_slot_id);
+CREATE INDEX ON swap_requests (requester_id);
+CREATE INDEX ON service_unavailability (service_id);

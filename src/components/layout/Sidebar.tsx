@@ -7,6 +7,7 @@ import {
   Users,
   Calendar,
   Settings,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -21,15 +22,15 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
-  disabled?: boolean;
   adminOnly?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/people",    label: "People",    icon: Users },
-  { href: "/roster",    label: "Roster",    icon: Calendar,  disabled: true },
-  { href: "/admin",     label: "Admin",     icon: Settings,  adminOnly: true },
+  { href: "/schedule",  label: "Schedule",  icon: Calendar },
+  { href: "/roster",    label: "Roster",    icon: ClipboardList, adminOnly: true },
+  { href: "/admin",     label: "Admin",     icon: Settings, adminOnly: true },
 ];
 
 export function Sidebar({ firstName, lastName, role }: SidebarProps) {
@@ -48,21 +49,10 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, disabled, adminOnly }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly }) => {
           if (adminOnly && role !== "admin") return null;
           const active =
             pathname === href || pathname.startsWith(href + "/");
-          if (disabled) {
-            return (
-              <span
-                key={href}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 opacity-40 cursor-default"
-              >
-                <Icon className="w-5 h-5 flex-shrink-0" />
-                {label}
-              </span>
-            );
-          }
           return (
             <Link
               key={href}

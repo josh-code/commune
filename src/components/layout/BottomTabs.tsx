@@ -13,11 +13,11 @@ export function BottomTabs({ role }: BottomTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { href: "/dashboard", label: "Home",   icon: LayoutDashboard },
-    { href: "/people",    label: "People", icon: Users },
-    { href: "/roster",    label: "Roster", icon: Calendar, disabled: true },
+    { href: "/dashboard", label: "Home",     icon: LayoutDashboard },
+    { href: "/people",    label: "People",   icon: Users },
+    { href: "/schedule",  label: "Schedule", icon: Calendar },
     ...(role === "admin"
-      ? [{ href: "/admin", label: "Admin", icon: Settings, disabled: false as const }]
+      ? [{ href: "/admin", label: "Admin", icon: Settings }]
       : []),
   ];
 
@@ -27,20 +27,9 @@ export function BottomTabs({ role }: BottomTabsProps) {
       style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
     >
       <div className="flex">
-        {tabs.map(({ href, label, icon: Icon, disabled }) => {
+        {tabs.map(({ href, label, icon: Icon }) => {
           const active =
             pathname === href || pathname.startsWith(href + "/");
-          if (disabled) {
-            return (
-              <span
-                key={href}
-                className="flex-1 flex flex-col items-center gap-1 py-2 text-xs font-medium text-slate-500 opacity-40 cursor-default"
-              >
-                <Icon className="w-5 h-5" />
-                <span>{label}</span>
-              </span>
-            );
-          }
           return (
             <Link
               key={href}

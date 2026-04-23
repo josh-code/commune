@@ -127,34 +127,45 @@ export async function updateRoleAction(
   revalidatePath("/people");
 }
 
-// ─── Admin: add team membership ──────────────────────────────────────────────
-// NOTE: Team membership is now managed via team_member_positions (requires a
-// position_id). Direct team-only assignment is handled through the rostering UI.
+// ─── Admin: add team + position membership ───────────────────────────────────
 
-export async function addTeamAction(
-  _profileId: string,
-  _formData: FormData,
-): Promise<void> {
-  // No-op: team assignment now requires a position (see rostering feature).
-}
-
-// ─── Admin: remove team membership ──────────────────────────────────────────
-
-export async function removeTeamAction(
+export async function addTeamPositionAction(
   profileId: string,
   formData: FormData,
+): Promise<{ error?: string }> {
+  const u = await requireUser();
+  if (u.role !== "admin") return { error: "Not authorised." };
+  const teamId     = formData.get("teamId")     as string;
+  const positionId = formData.get("positionId") as string;
+  const teamRole   = (formData.get("teamRole")  as string) ?? "member";
+  if (!teamId || !positionId) return { error: "Team and position are required." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("team_member_positions").insert({
+    profile_id: profileId,
+    team_id: teamId,
+    position_id: positionId,
+    team_role: teamRole as "leader" | "member",
+  });
+  if (error) return { error: error.message };
+  revalidatePath(`/people/${profileId}`);
+  return {};
+}
+
+// ─── Admin: remove team position membership ───────────────────────────────────
+
+export async function removeTeamPositionAction(
+  profileId: string,
+  positionId: string,
 ): Promise<void> {
   const u = await requireUser();
   if (u.role !== "admin") throw new Error("Not authorised.");
-  const teamId = formData.get("teamId") as string;
-  if (!teamId) return;
-
   const supabase = await createClient();
   await supabase
     .from("team_member_positions")
     .delete()
     .eq("profile_id", profileId)
-    .eq("team_id", teamId);
+    .eq("position_id", positionId);
   revalidatePath(`/people/${profileId}`);
 }
 

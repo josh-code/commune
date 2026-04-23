@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
-import { StatusForm, RoleForm, RemoveTeamForm, AddTeamForm, EditProfileForm, RemoveMemberForm } from "./ProfileForms";
+import { StatusForm, RoleForm, AddToTeamForm, EditProfileForm, RemoveMemberForm } from "./ProfileForms";
+import { removeTeamPositionAction } from "./actions";
 
 const AVATAR_COLORS = [
   "bg-indigo-500", "bg-amber-500", "bg-pink-500",
@@ -52,30 +53,29 @@ export default async function ProfilePage({
 
   if (error || !profile) redirect("/people");
 
-  const { data: memberTeams } = await supabase
+  const { data: memberPositions } = await supabase
     .from("team_member_positions")
-    .select("team_id, teams(id, name, color)")
+    .select("team_id, team_role, position_id, teams(id, name, color), team_positions(name, order)")
     .eq("profile_id", id);
+
+  const { data: allPositions } = await supabase
+    .from("team_positions")
+    .select("id, team_id, name, order")
+    .order("order");
 
   const { data: allTeams } = await supabase
     .from("teams")
     .select("id, name, color")
     .order("name");
 
-  // Deduplicate by team id (a member can have multiple positions in the same team)
-  const assignedTeamIds = new Set<string>(
-    (memberTeams ?? [])
-      .map((mt) => mt.teams?.id)
-      .filter((x): x is string => x != null),
-  );
-  const assignedTeams = Array.from(
-    new Map(
-      (memberTeams ?? [])
-        .map((mt) => mt.teams)
-        .filter((t): t is { id: string; name: string; color: string } => t != null)
-        .map((t) => [t.id, t]),
-    ).values(),
-  );
+  type MemberPos = {
+    team_id: string;
+    team_role: string;
+    position_id: string;
+    teams: { id: string; name: string; color: string } | null;
+    team_positions: { name: string; order: number } | null;
+  };
+  const positionRows: MemberPos[] = (memberPositions ?? []) as MemberPos[];
 
   const isAdmin = viewer.role === "admin";
   const isOwnProfile = viewer.id === id;
@@ -194,25 +194,41 @@ export default async function ProfilePage({
       {tab === "teams" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <h2 className="text-sm font-semibold text-slate-700 mb-4">Teams</h2>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {assignedTeams.length === 0 && (
-              <p className="text-sm text-slate-400">No teams assigned.</p>
-            )}
-            {assignedTeams.map((t) => (
-              <span
-                key={t.id}
-                className="inline-flex items-center gap-1.5 text-sm px-3 py-1 rounded-full bg-indigo-50 text-indigo-700"
-              >
-                {t.name}
-                {isAdmin && <RemoveTeamForm profileId={id} teamId={t.id} />}
-              </span>
-            ))}
-          </div>
+          {positionRows.length === 0 && (
+            <p className="text-sm text-slate-400 mb-4">No team assignments.</p>
+          )}
+          {positionRows.length > 0 && (
+            <div className="space-y-2 mb-4">
+              {positionRows.map((r) => (
+                <div key={r.position_id} className="flex items-center gap-3 text-sm py-1.5 border-b border-slate-100 last:border-0">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                    style={{ background: r.teams?.color ?? "#94a3b8" }}
+                  />
+                  <span className="font-medium text-slate-800 w-24 flex-shrink-0">{r.teams?.name}</span>
+                  <span className="text-slate-500 flex-1">{r.team_positions?.name}</span>
+                  <span className={cn(
+                    "text-xs px-1.5 py-0.5 rounded-full font-medium capitalize",
+                    r.team_role === "leader" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600",
+                  )}>
+                    {r.team_role}
+                  </span>
+                  {isAdmin && (
+                    <form action={async () => { "use server"; await removeTeamPositionAction(id, r.position_id); }}>
+                      <button type="submit" className="text-xs text-red-400 hover:text-red-700 ml-2">
+                        Remove
+                      </button>
+                    </form>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           {isAdmin && (
-            <AddTeamForm
+            <AddToTeamForm
               profileId={id}
               allTeams={allTeams ?? []}
-              assignedTeamIds={assignedTeamIds}
+              allPositions={allPositions ?? []}
             />
           )}
         </div>

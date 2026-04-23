@@ -1,14 +1,13 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   updateProfileAction,
   updateStatusAction,
   updateRoleAction,
-  addTeamAction,
-  removeTeamAction,
   removeMemberAction,
+  addTeamPositionAction,
   type UpdateProfileState,
 } from "./actions";
 
@@ -68,61 +67,78 @@ export function RoleForm({
   );
 }
 
-// ── Remove team button ───────────────────────────────────────────────────────
+// ── Add to team form (position + role) ──────────────────────────────────────
 
-export function RemoveTeamForm({
-  profileId,
-  teamId,
-}: {
-  profileId: string;
-  teamId: string;
-}) {
-  return (
-    <form action={removeTeamAction.bind(null, profileId)} className="inline">
-      <input type="hidden" name="teamId" value={teamId} />
-      <button
-        type="submit"
-        className="text-indigo-400 hover:text-indigo-700 leading-none ml-1"
-        aria-label="Remove team"
-      >
-        ×
-      </button>
-    </form>
-  );
-}
+type TPosition = { id: string; team_id: string; name: string; order: number };
+type TTeam = { id: string; name: string; color: string };
 
-// ── Add team dropdown ────────────────────────────────────────────────────────
-
-export function AddTeamForm({
+export function AddToTeamForm({
   profileId,
   allTeams,
-  assignedTeamIds,
+  allPositions,
 }: {
   profileId: string;
-  allTeams: { id: string; name: string; color: string }[];
-  assignedTeamIds: Set<string>;
+  allTeams: TTeam[];
+  allPositions: TPosition[];
 }) {
-  const available = allTeams.filter((t) => !assignedTeamIds.has(t.id));
-  if (available.length === 0) return null;
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const teamPositions = allPositions
+    .filter(p => p.team_id === selectedTeamId)
+    .sort((a, b) => a.order - b.order);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    startTransition(async () => {
+      const result = await addTeamPositionAction(profileId, fd);
+      if (result?.error) setError(result.error);
+      else { setError(null); (e.target as HTMLFormElement).reset(); setSelectedTeamId(""); }
+    });
+  };
 
   return (
-    <form action={addTeamAction.bind(null, profileId)} className="flex items-center gap-2">
-      <select
-        name="teamId"
-        className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-white outline-none focus:ring-2 focus:ring-indigo-500/20"
-      >
-        {available.map((t) => (
-          <option key={t.id} value={t.id}>
-            {t.name}
-          </option>
-        ))}
-      </select>
-      <button
-        type="submit"
-        className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-      >
-        + Add team
-      </button>
+    <form onSubmit={handleSubmit} className="space-y-2 pt-2 border-t border-slate-100">
+      <p className="text-xs font-medium text-slate-500">Add to team</p>
+      {error && <p className="text-xs text-red-600">{error}</p>}
+      <div className="flex flex-wrap gap-2 items-end">
+        <select
+          name="teamId"
+          value={selectedTeamId}
+          onChange={e => setSelectedTeamId(e.target.value)}
+          required
+          className="text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+        >
+          <option value="">Team…</option>
+          {allTeams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+        </select>
+        <select
+          name="positionId"
+          required
+          disabled={!selectedTeamId}
+          className="text-xs border border-slate-200 rounded-lg px-2 py-1.5 disabled:opacity-40"
+        >
+          <option value="">Position…</option>
+          {teamPositions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        </select>
+        <select
+          name="teamRole"
+          defaultValue="member"
+          className="text-xs border border-slate-200 rounded-lg px-2 py-1.5"
+        >
+          <option value="member">Member</option>
+          <option value="leader">Leader</option>
+        </select>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="text-xs font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+        >
+          Add
+        </button>
+      </div>
     </form>
   );
 }

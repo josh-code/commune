@@ -53,8 +53,8 @@ export default async function ProfilePage({
   if (error || !profile) redirect("/people");
 
   const { data: memberTeams } = await supabase
-    .from("member_teams")
-    .select("teams(id, name, color)")
+    .from("team_member_positions")
+    .select("team_id, teams(id, name, color)")
     .eq("profile_id", id);
 
   const { data: allTeams } = await supabase
@@ -62,14 +62,20 @@ export default async function ProfilePage({
     .select("id, name, color")
     .order("name");
 
+  // Deduplicate by team id (a member can have multiple positions in the same team)
   const assignedTeamIds = new Set<string>(
     (memberTeams ?? [])
-      .map((mt: { teams: { id: string } | null }) => mt.teams?.id)
+      .map((mt) => mt.teams?.id)
       .filter((x): x is string => x != null),
   );
-  const assignedTeams = (memberTeams ?? [])
-    .map((mt: { teams: { id: string; name: string; color: string } | null }) => mt.teams)
-    .filter((t): t is { id: string; name: string; color: string } => t !== null);
+  const assignedTeams = Array.from(
+    new Map(
+      (memberTeams ?? [])
+        .map((mt) => mt.teams)
+        .filter((t): t is { id: string; name: string; color: string } => t != null)
+        .map((t) => [t.id, t]),
+    ).values(),
+  );
 
   const isAdmin = viewer.role === "admin";
   const isOwnProfile = viewer.id === id;

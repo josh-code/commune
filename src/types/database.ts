@@ -34,39 +34,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      member_teams: {
-        Row: {
-          assigned_at: string
-          profile_id: string
-          team_id: string
-        }
-        Insert: {
-          assigned_at?: string
-          profile_id: string
-          team_id: string
-        }
-        Update: {
-          assigned_at?: string
-          profile_id?: string
-          team_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "member_teams_profile_id_fkey"
-            columns: ["profile_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "member_teams_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       profiles: {
         Row: {
           address: string | null
@@ -114,6 +81,266 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      roster_slots: {
+        Row: {
+          id: string
+          notified_at: string | null
+          position_id: string
+          profile_id: string | null
+          responded_at: string | null
+          service_id: string
+          status: string
+          team_id: string
+        }
+        Insert: {
+          id?: string
+          notified_at?: string | null
+          position_id: string
+          profile_id?: string | null
+          responded_at?: string | null
+          service_id: string
+          status?: string
+          team_id: string
+        }
+        Update: {
+          id?: string
+          notified_at?: string | null
+          position_id?: string
+          profile_id?: string | null
+          responded_at?: string | null
+          service_id?: string
+          status?: string
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roster_slots_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "team_positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_slots_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_slots_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "roster_slots_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_unavailability: {
+        Row: {
+          created_at: string
+          profile_id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          profile_id: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          profile_id?: string
+          service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_unavailability_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_unavailability_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      services: {
+        Row: {
+          created_at: string
+          created_by: string
+          date: string
+          id: string
+          name: string
+          status: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          date: string
+          id?: string
+          name: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          date?: string
+          id?: string
+          name?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "services_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      swap_requests: {
+        Row: {
+          created_at: string
+          id: string
+          proposed_replacement_id: string | null
+          requester_id: string
+          roster_slot_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          proposed_replacement_id?: string | null
+          requester_id: string
+          roster_slot_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          proposed_replacement_id?: string | null
+          requester_id?: string
+          roster_slot_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "swap_requests_proposed_replacement_id_fkey"
+            columns: ["proposed_replacement_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swap_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "swap_requests_roster_slot_id_fkey"
+            columns: ["roster_slot_id"]
+            isOneToOne: false
+            referencedRelation: "roster_slots"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_member_positions: {
+        Row: {
+          assigned_at: string
+          position_id: string
+          profile_id: string
+          team_id: string
+          team_role: string
+        }
+        Insert: {
+          assigned_at?: string
+          position_id: string
+          profile_id: string
+          team_id: string
+          team_role?: string
+        }
+        Update: {
+          assigned_at?: string
+          position_id?: string
+          profile_id?: string
+          team_id?: string
+          team_role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_member_positions_position_id_fkey"
+            columns: ["position_id"]
+            isOneToOne: false
+            referencedRelation: "team_positions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_member_positions_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_member_positions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_positions: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          order: number
+          team_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          order?: number
+          team_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          order?: number
+          team_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_positions_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teams: {
         Row: {

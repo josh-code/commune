@@ -3,12 +3,9 @@
 import { useActionState } from "react";
 import { sendInviteAction, type InviteFormState } from "./actions";
 
-type Team = { id: string; name: string };
-type Props = { teams: Team[] };
-
 const initialState: InviteFormState = { status: "idle" };
 
-export function InviteForm({ teams }: Props) {
+export function InviteForm() {
   const [state, formAction, isPending] = useActionState(
     sendInviteAction,
     initialState,
@@ -59,25 +56,6 @@ export function InviteForm({ teams }: Props) {
             className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20"
           />
         </div>
-
-        {teams.length > 0 && (
-          <fieldset className="space-y-2">
-            <legend className="text-xs font-medium text-slate-600">Teams</legend>
-            <div className="grid grid-cols-2 gap-2">
-              {teams.map((t) => (
-                <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="teamId"
-                    value={t.id}
-                    className="rounded border-slate-300 text-indigo-600"
-                  />
-                  {t.name}
-                </label>
-              ))}
-            </div>
-          </fieldset>
-        )}
 
         {state.status === "error" && (
           <p className="text-sm text-red-600">{state.message}</p>

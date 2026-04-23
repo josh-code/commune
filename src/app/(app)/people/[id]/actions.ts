@@ -128,21 +128,14 @@ export async function updateRoleAction(
 }
 
 // ─── Admin: add team membership ──────────────────────────────────────────────
+// NOTE: Team membership is now managed via team_member_positions (requires a
+// position_id). Direct team-only assignment is handled through the rostering UI.
 
 export async function addTeamAction(
-  profileId: string,
-  formData: FormData,
+  _profileId: string,
+  _formData: FormData,
 ): Promise<void> {
-  const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
-  const teamId = formData.get("teamId") as string;
-  if (!teamId) return;
-
-  const supabase = await createClient();
-  await supabase
-    .from("member_teams")
-    .upsert({ profile_id: profileId, team_id: teamId });
-  revalidatePath(`/people/${profileId}`);
+  // No-op: team assignment now requires a position (see rostering feature).
 }
 
 // ─── Admin: remove team membership ──────────────────────────────────────────
@@ -158,7 +151,7 @@ export async function removeTeamAction(
 
   const supabase = await createClient();
   await supabase
-    .from("member_teams")
+    .from("team_member_positions")
     .delete()
     .eq("profile_id", profileId)
     .eq("team_id", teamId);

@@ -36,7 +36,6 @@ export async function sendInviteAction(
     return { status: "error", message: parsed.error.issues[0].message };
   }
 
-  const teamIds = formData.getAll("teamId") as string[];
   const { token, expiresAt } = generateInviteToken();
   const admin = createAdminClient();
 
@@ -65,15 +64,6 @@ export async function sendInviteAction(
     }).eq("id", existing.id);
     if (error) return { status: "error", message: error.message };
     profileId = existing.id;
-
-    // Replace team assignments for re-invite (delete old, insert new)
-    await admin.from("member_teams").delete().eq("profile_id", profileId);
-    if (teamIds.length > 0) {
-      const { error: teamsError } = await admin.from("member_teams").insert(
-        teamIds.map((teamId) => ({ profile_id: profileId, team_id: teamId })),
-      );
-      if (teamsError) return { status: "error", message: teamsError.message };
-    }
   } else {
     const { data: authData, error: authError } =
       await admin.auth.admin.createUser({
@@ -100,14 +90,6 @@ export async function sendInviteAction(
     });
     if (error) return { status: "error", message: error.message };
     profileId = authData.user.id;
-
-    // Assign teams for new invite
-    if (teamIds.length > 0) {
-      const { error: teamsError } = await admin.from("member_teams").upsert(
-        teamIds.map((teamId) => ({ profile_id: profileId, team_id: teamId })),
-      );
-      if (teamsError) return { status: "error", message: teamsError.message };
-    }
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";

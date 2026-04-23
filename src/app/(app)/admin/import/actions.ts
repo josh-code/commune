@@ -106,22 +106,9 @@ export async function bulkImportAction(formData: FormData): Promise<ImportResult
       continue;
     }
 
-    // Assign teams
-    const teamIds = row.teams
-      .map((name) => teamNameCache.get(name))
-      .filter((id): id is string => id !== undefined);
-    if (teamIds.length > 0) {
-      const { error: teamsError } = await admin.from("member_teams").insert(
-        teamIds.map((teamId) => ({
-          profile_id: authData.user.id,
-          team_id:    teamId,
-        })),
-      );
-      if (teamsError) {
-        // Profile was created but teams failed — log in errors but still count as created
-        result.errors.push({ email: row.email, message: `Teams not assigned: ${teamsError.message}` });
-      }
-    }
+    // NOTE: team assignment during CSV import is removed — team membership now
+    // requires a position (team_member_positions). Teams can be assigned through
+    // the rostering UI after the member activates their account.
 
     result.created++;
     result.results.push({

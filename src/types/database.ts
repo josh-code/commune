@@ -144,6 +144,50 @@ export type Database = {
           },
         ]
       }
+      service_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          day_of_month: number | null
+          day_of_week: number | null
+          frequency: string
+          id: string
+          month_of_year: number | null
+          name: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          frequency: string
+          id?: string
+          month_of_year?: number | null
+          name: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          day_of_month?: number | null
+          day_of_week?: number | null
+          frequency?: string
+          id?: string
+          month_of_year?: number | null
+          name?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       service_unavailability: {
         Row: {
           created_at: string
@@ -185,6 +229,7 @@ export type Database = {
           id: string
           name: string
           status: string
+          template_id: string | null
           type: string
         }
         Insert: {
@@ -194,6 +239,7 @@ export type Database = {
           id?: string
           name: string
           status?: string
+          template_id?: string | null
           type?: string
         }
         Update: {
@@ -203,6 +249,7 @@ export type Database = {
           id?: string
           name?: string
           status?: string
+          template_id?: string | null
           type?: string
         }
         Relationships: [
@@ -211,6 +258,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "services_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "service_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -362,6 +416,41 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      unavailability_ranges: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          profile_id: string
+          reason: string | null
+          start_date: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          profile_id: string
+          reason?: string | null
+          start_date: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          profile_id?: string
+          reason?: string | null
+          start_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "unavailability_ranges_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

@@ -1,5 +1,6 @@
 // src/app/(app)/roster/page.tsx
 import Link from "next/link";
+import { Repeat } from "lucide-react";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -61,6 +62,15 @@ export default async function RosterPage() {
         <Link href="/roster/new"
           className="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
           + New service
+        </Link>
+      </div>
+
+      {/* Templates shortcut */}
+      <div className="bg-indigo-50 border border-indigo-100 rounded-xl px-5 py-3 mb-6 flex items-center gap-3">
+        <Repeat className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+        <span className="text-sm text-indigo-800 flex-1">Manage recurring service templates</span>
+        <Link href="/roster/templates" className="text-xs font-medium text-indigo-600 hover:text-indigo-800">
+          View templates →
         </Link>
       </div>
 

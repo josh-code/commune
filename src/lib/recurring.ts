@@ -28,10 +28,11 @@ export function nextOccurrence(config: TemplateConfig, afterDate: Date): Date {
     case "monthly": {
       const target = config.day_of_month ?? 1;
       if (d.getDate() > target) {
+        d.setDate(1); // prevent month overflow before advancing
         d.setMonth(d.getMonth() + 1);
-        d.setDate(1);
       }
-      d.setDate(target);
+      const lastDay = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
+      d.setDate(Math.min(target, lastDay));
       return d;
     }
 
@@ -42,10 +43,12 @@ export function nextOccurrence(config: TemplateConfig, afterDate: Date): Date {
         d.getMonth() > targetMonth ||
         (d.getMonth() === targetMonth && d.getDate() > targetDay)
       ) {
+        d.setDate(1); // prevent month overflow before advancing year
         d.setFullYear(d.getFullYear() + 1);
       }
       d.setMonth(targetMonth);
-      d.setDate(targetDay);
+      const lastDay = new Date(d.getFullYear(), targetMonth + 1, 0).getDate();
+      d.setDate(Math.min(targetDay, lastDay));
       return d;
     }
   }

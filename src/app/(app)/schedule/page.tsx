@@ -2,7 +2,7 @@
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
-import { confirmAction, declineAction, markUnavailableAction, unmarkUnavailableAction } from "./actions";
+import { confirmAction, declineAction, markUnavailableAction, unmarkUnavailableAction, addRangeAction, removeRangeAction } from "./actions";
 
 const SLOT_STATUS_STYLES: Record<string, string> = {
   pending:    "bg-amber-100 text-amber-700",
@@ -63,8 +63,13 @@ export default async function SchedulePage() {
   const myUnavailableIds = new Set((unavailability ?? []).map(u => u.service_id));
   const myRosteredServiceIds = new Set(typedSlots.map(s => s.service_id));
 
-  // suppress unused variable warning — user is used indirectly for RLS auth
-  void user;
+  // My upcoming date ranges (end_date >= today)
+  const { data: myRanges } = await supabase
+    .from("unavailability_ranges")
+    .select("id, start_date, end_date, reason")
+    .eq("profile_id", user.id)
+    .gte("end_date", today)
+    .order("start_date");
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -167,6 +172,57 @@ export default async function SchedulePage() {
             </div>
           );
         })}
+      </div>
+
+      {/* Dates I'm away */}
+      <div className="bg-white rounded-xl border border-slate-200 p-5">
+        <h2 className="text-sm font-semibold text-slate-700 mb-1">Dates I&#39;m away</h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Add a date range and all services in that window will be marked unavailable automatically.
+        </p>
+
+        {/* Existing ranges */}
+        {(myRanges ?? []).length > 0 && (
+          <div className="space-y-2 mb-4">
+            {(myRanges ?? []).map(r => (
+              <div key={r.id} className="flex items-center gap-3 text-sm py-1.5 border-b border-slate-100 last:border-0">
+                <div className="flex-1">
+                  <span className="text-slate-800 font-medium">
+                    {new Date(r.start_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
+                    {" — "}
+                    {new Date(r.end_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
+                  </span>
+                  {r.reason && <span className="text-xs text-slate-400 ml-2">{r.reason}</span>}
+                </div>
+                <form action={async () => { "use server"; await removeRangeAction(r.id); }}>
+                  <button type="submit" className="text-xs text-red-400 hover:text-red-700">Remove</button>
+                </form>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Add range form */}
+        <form action={async (formData: FormData) => { "use server"; await addRangeAction(formData); }} className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">From</label>
+              <input type="date" name="start_date" required
+                className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-slate-600">To</label>
+              <input type="date" name="end_date" required
+                className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
+            </div>
+          </div>
+          <input type="text" name="reason" placeholder="Reason (optional)"
+            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
+          <button type="submit"
+            className="text-sm font-medium bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors">
+            Mark unavailable
+          </button>
+        </form>
       </div>
     </div>
   );

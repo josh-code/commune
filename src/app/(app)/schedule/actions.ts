@@ -78,3 +78,47 @@ export async function unmarkUnavailableAction(serviceId: string): Promise<{ erro
   revalidatePath("/schedule");
   return {};
 }
+
+export async function addRangeAction(formData: FormData): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const startDate = formData.get("start_date") as string;
+  const endDate   = formData.get("end_date")   as string;
+  const reason    = (formData.get("reason") as string)?.trim() || null;
+
+  if (!startDate || !endDate) return { error: "Start and end dates are required." };
+  if (endDate < startDate)    return { error: "End date must be on or after start date." };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("unavailability_ranges").insert({
+    profile_id: user.id,
+    start_date: startDate,
+    end_date: endDate,
+    reason,
+  });
+
+  if (error) return { error: error.message };
+  revalidatePath("/schedule");
+  return {};
+}
+
+export async function removeRangeAction(rangeId: string): Promise<{ error?: string }> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  const { data: range } = await supabase
+    .from("unavailability_ranges")
+    .select("profile_id")
+    .eq("id", rangeId)
+    .maybeSingle();
+
+  if (!range || range.profile_id !== user.id) return { error: "Not authorised." };
+
+  const { error } = await supabase
+    .from("unavailability_ranges")
+    .delete()
+    .eq("id", rangeId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/schedule");
+  return {};
+}

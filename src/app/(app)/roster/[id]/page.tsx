@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { RosterBuilder } from "./RosterBuilder";
-import { isDateInRanges } from "@/lib/recurring";
+
 
 export default async function ServiceDetailPage({
   params,
@@ -44,14 +44,13 @@ export default async function ServiceDetailPage({
     .eq("service_id", serviceId);
 
   // Members who have a date range covering this service's date
-  const { data: allRanges } = await supabase
+  const { data: rangeRows } = await supabase
     .from("unavailability_ranges")
-    .select("profile_id, start_date, end_date");
+    .select("profile_id")
+    .lte("start_date", service.date)
+    .gte("end_date", service.date);
 
-  // Combine: unavailable if service-specific OR if service date falls in a range
-  const rangeUnavailableIds = (allRanges ?? [])
-    .filter(r => isDateInRanges(service.date, [r]))
-    .map(r => r.profile_id);
+  const rangeUnavailableIds = (rangeRows ?? []).map(r => r.profile_id);
 
   const combinedUnavailableIds = [
     ...(unavailability ?? []).map(u => u.profile_id),

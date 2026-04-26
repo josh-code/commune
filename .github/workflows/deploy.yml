@@ -1,0 +1,32 @@
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@51.5.0
+
+      - name: Pull Vercel Environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: team_PqGsatuJvAHU7EJ2p1KyHjRh
+          VERCEL_PROJECT_ID: prj_xDQ4Qbb8QuwdHqaVJszCWsAVQ4kz
+
+      - name: Build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: team_PqGsatuJvAHU7EJ2p1KyHjRh
+          VERCEL_PROJECT_ID: prj_xDQ4Qbb8QuwdHqaVJszCWsAVQ4kz
+
+      - name: Deploy
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: team_PqGsatuJvAHU7EJ2p1KyHjRh
+          VERCEL_PROJECT_ID: prj_xDQ4Qbb8QuwdHqaVJszCWsAVQ4kz

@@ -4,7 +4,6 @@ import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { RosterBuilder } from "./RosterBuilder";
 
-
 export default async function ServiceDetailPage({
   params,
 }: {

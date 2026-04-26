@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { RosterBuilder } from "./RosterBuilder";
+import { isDateInRanges } from "@/lib/recurring";
 
 export default async function ServiceDetailPage({
   params,
@@ -42,6 +43,21 @@ export default async function ServiceDetailPage({
     .select("profile_id")
     .eq("service_id", serviceId);
 
+  // Members who have a date range covering this service's date
+  const { data: allRanges } = await supabase
+    .from("unavailability_ranges")
+    .select("profile_id, start_date, end_date");
+
+  // Combine: unavailable if service-specific OR if service date falls in a range
+  const rangeUnavailableIds = (allRanges ?? [])
+    .filter(r => isDateInRanges(service.date, [r]))
+    .map(r => r.profile_id);
+
+  const combinedUnavailableIds = [
+    ...(unavailability ?? []).map(u => u.profile_id),
+    ...rangeUnavailableIds,
+  ].filter((id, i, arr) => arr.indexOf(id) === i); // deduplicate
+
   type TeamRow = {
     id: string;
     name: string;
@@ -68,7 +84,7 @@ export default async function ServiceDetailPage({
       teams={teamsWithSortedPositions}
       slots={slots ?? []}
       eligible={eligible as EligibleRow[] ?? []}
-      unavailableProfileIds={(unavailability ?? []).map(u => u.profile_id)}
+      unavailableProfileIds={combinedUnavailableIds}
     />
   );
 }

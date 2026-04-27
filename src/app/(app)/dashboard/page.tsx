@@ -1,5 +1,6 @@
 // src/app/(app)/dashboard/page.tsx
 import Link from "next/link";
+import { Boxes, Bell } from "lucide-react";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
@@ -41,12 +42,74 @@ export default async function DashboardPage() {
     .sort((a, b) => (a.services?.date ?? "").localeCompare(b.services?.date ?? ""))
     .slice(0, 3);
 
+  // My active inventory reservations (anything not finished)
+  const { data: myInvRes } = await supabase
+    .from("inventory_reservations")
+    .select("id, status, start_date, end_date, inventory_items(id, name)")
+    .eq("profile_id", user.id)
+    .in("status", ["pending", "approved", "checked_out"])
+    .order("start_date");
+
+  // Staff alerts
+  const isStaff = user.role === "admin" || user.role === "logistics";
+  let pendingApprovalCount = 0;
+  let overdueCount = 0;
+  if (isStaff) {
+    const today = new Date().toISOString().split("T")[0];
+    const [{ count: pc }, { count: oc }] = await Promise.all([
+      supabase.from("inventory_reservations").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      supabase.from("inventory_reservations").select("id", { count: "exact", head: true }).eq("status", "checked_out").lt("end_date", today),
+    ]);
+    pendingApprovalCount = pc ?? 0;
+    overdueCount = oc ?? 0;
+  }
+
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Welcome, {user.firstName}</h1>
         <p className="text-sm text-slate-500 mt-1 capitalize">{user.role}</p>
       </div>
+
+      {/* Inventory: my reservations */}
+      {(myInvRes ?? []).length > 0 && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Boxes className="w-4 h-4 text-indigo-500" />
+            <h2 className="text-sm font-semibold text-slate-700">My inventory</h2>
+            <Link href="/inventory/reservations" className="ml-auto text-xs font-medium text-indigo-600 hover:text-indigo-800">
+              See all →
+            </Link>
+          </div>
+          <div className="space-y-1">
+            {(myInvRes ?? []).slice(0, 4).map(r => {
+              const it = r.inventory_items as { id: string; name: string } | null;
+              return (
+                <div key={r.id} className="flex items-center gap-3 text-sm py-1">
+                  <span className="flex-1 text-slate-800">{it?.name ?? "—"}</span>
+                  <span className="text-xs text-slate-500">{r.start_date} → {r.end_date}</span>
+                  <span className="text-xs text-indigo-600 capitalize">{r.status.replace("_", " ")}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Inventory: staff alerts */}
+      {isStaff && (pendingApprovalCount > 0 || overdueCount > 0) && (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+          <Bell className="w-4 h-4 text-amber-600 flex-shrink-0" />
+          <span className="text-sm text-amber-800 flex-1">
+            {pendingApprovalCount > 0 && <>{pendingApprovalCount} pending approval{pendingApprovalCount > 1 && "s"}</>}
+            {pendingApprovalCount > 0 && overdueCount > 0 && " · "}
+            {overdueCount > 0 && <>{overdueCount} overdue</>}
+          </span>
+          <Link href="/admin/inventory/reservations" className="text-xs font-medium text-amber-700 hover:text-amber-900">
+            Review →
+          </Link>
+        </div>
+      )}
 
       {upcoming.length > 0 && (
         <div className="bg-white rounded-xl border border-slate-200 p-5">

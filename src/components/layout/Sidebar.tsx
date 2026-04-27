@@ -8,6 +8,7 @@ import {
   Calendar,
   Settings,
   ClipboardList,
+  Boxes,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -29,6 +30,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/people",    label: "People",    icon: Users },
   { href: "/schedule",  label: "Schedule",  icon: Calendar },
+  { href: "/inventory", label: "Inventory", icon: Boxes },
   { href: "/roster",    label: "Roster",    icon: ClipboardList, adminOnly: true },
   { href: "/admin",     label: "Admin",     icon: Settings, adminOnly: true },
 ];

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth";
-import { Users, Upload, Users2 } from "lucide-react";
+import { Users, Upload, Users2, Boxes } from "lucide-react";
 
 export default async function AdminPage() {
   await requireAdmin();
@@ -22,6 +22,11 @@ export default async function AdminPage() {
           <Users2 className="w-6 h-6 text-indigo-600 mb-3" />
           <div className="font-medium text-slate-900 text-sm">Manage teams</div>
           <div className="text-xs text-slate-500 mt-1">Set up teams, positions, and member assignments</div>
+        </Link>
+        <Link href="/admin/inventory" className="bg-white rounded-xl border border-slate-200 p-5 hover:bg-slate-50 transition-colors">
+          <Boxes className="w-6 h-6 text-indigo-600 mb-3" />
+          <div className="font-medium text-slate-900 text-sm">Inventory</div>
+          <div className="text-xs text-slate-500 mt-1">Categories, items, reservations</div>
         </Link>
       </div>
     </div>

@@ -2,6 +2,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { generateDates, toDateString, generateServiceName, type TemplateConfig } from "@/lib/recurring";
@@ -63,7 +64,7 @@ export async function createTemplateAction(formData: FormData): Promise<{ error?
   redirect("/roster/templates");
 }
 
-export async function generateMoreAction(templateId: string): Promise<{ error?: string }> {
+export async function generateMoreAction(templateId: string): Promise<void> {
   const user = await requireAdmin();
   const supabase = await createClient();
 
@@ -73,7 +74,7 @@ export async function generateMoreAction(templateId: string): Promise<{ error?: 
     .eq("id", templateId)
     .single();
 
-  if (!template) return { error: "Template not found." };
+  if (!template) return;
 
   // Find the latest existing service for this template
   const { data: latest } = await supabase
@@ -103,8 +104,6 @@ export async function generateMoreAction(templateId: string): Promise<{ error?: 
     template_id: templateId,
   }));
 
-  const { error } = await supabase.from("services").insert(rows);
-  if (error) return { error: error.message };
-
-  return {};
+  await supabase.from("services").insert(rows);
+  revalidatePath("/roster/templates");
 }

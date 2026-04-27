@@ -91,7 +91,7 @@ export default async function TemplatesPage() {
                 <div className="text-xs text-slate-500 mt-0.5">{frequencyDescription(t)}</div>
               </div>
               <span className="text-xs text-slate-400">{count} upcoming</span>
-              <form action={async () => { "use server"; await generateMoreAction(t.id); }}>
+              <form action={generateMoreAction.bind(null, t.id)}>
                 <button type="submit"
                   className="text-xs font-medium text-indigo-600 hover:text-indigo-800 px-2 py-1 rounded hover:bg-indigo-50">
                   Generate 8 more

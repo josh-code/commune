@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
-export async function confirmAction(slotId: string): Promise<{ error?: string }> {
+export async function confirmAction(slotId: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -15,20 +15,19 @@ export async function confirmAction(slotId: string): Promise<{ error?: string }>
     .eq("id", slotId)
     .maybeSingle();
 
-  if (!slot || slot.profile_id !== user.id) return { error: "Not authorised." };
+  if (!slot || slot.profile_id !== user.id) return;
 
   const { error } = await supabase
     .from("roster_slots")
     .update({ status: "confirmed", responded_at: new Date().toISOString() })
     .eq("id", slotId);
 
-  if (error) return { error: error.message };
+  if (error) return;
   revalidatePath("/schedule");
   revalidatePath("/dashboard");
-  return {};
 }
 
-export async function declineAction(slotId: string): Promise<{ error?: string }> {
+export async function declineAction(slotId: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -38,70 +37,63 @@ export async function declineAction(slotId: string): Promise<{ error?: string }>
     .eq("id", slotId)
     .maybeSingle();
 
-  if (!slot || slot.profile_id !== user.id) return { error: "Not authorised." };
+  if (!slot || slot.profile_id !== user.id) return;
 
   const { error } = await supabase
     .from("roster_slots")
     .update({ status: "declined", responded_at: new Date().toISOString() })
     .eq("id", slotId);
 
-  if (error) return { error: error.message };
+  if (error) return;
   revalidatePath("/schedule");
   revalidatePath("/dashboard");
-  return {};
 }
 
-export async function markUnavailableAction(serviceId: string): Promise<{ error?: string }> {
+export async function markUnavailableAction(serviceId: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  const { error } = await supabase
+  await supabase
     .from("service_unavailability")
     .insert({ profile_id: user.id, service_id: serviceId });
+  // ignore duplicate key errors (23505) — idempotent
 
-  if (error && error.code !== "23505") return { error: error.message }; // ignore duplicate
   revalidatePath("/schedule");
-  return {};
 }
 
-export async function unmarkUnavailableAction(serviceId: string): Promise<{ error?: string }> {
+export async function unmarkUnavailableAction(serviceId: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  const { error } = await supabase
+  await supabase
     .from("service_unavailability")
     .delete()
     .eq("profile_id", user.id)
     .eq("service_id", serviceId);
 
-  if (error) return { error: error.message };
   revalidatePath("/schedule");
-  return {};
 }
 
-export async function addRangeAction(formData: FormData): Promise<{ error?: string }> {
+export async function addRangeAction(formData: FormData): Promise<void> {
   const user = await requireUser();
   const startDate = formData.get("start_date") as string;
   const endDate   = formData.get("end_date")   as string;
   const reason    = (formData.get("reason") as string)?.trim() || null;
 
-  if (!startDate || !endDate) return { error: "Start and end dates are required." };
-  if (endDate < startDate)    return { error: "End date must be on or after start date." };
+  if (!startDate || !endDate || endDate < startDate) return;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("unavailability_ranges").insert({
+  await supabase.from("unavailability_ranges").insert({
     profile_id: user.id,
     start_date: startDate,
     end_date: endDate,
     reason,
   });
 
-  if (error) return { error: error.message };
   revalidatePath("/schedule");
-  return {};
 }
 
-export async function removeRangeAction(rangeId: string): Promise<{ error?: string }> {
+export async function removeRangeAction(rangeId: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
@@ -111,14 +103,12 @@ export async function removeRangeAction(rangeId: string): Promise<{ error?: stri
     .eq("id", rangeId)
     .maybeSingle();
 
-  if (!range || range.profile_id !== user.id) return { error: "Not authorised." };
+  if (!range || range.profile_id !== user.id) return;
 
-  const { error } = await supabase
+  await supabase
     .from("unavailability_ranges")
     .delete()
     .eq("id", rangeId);
 
-  if (error) return { error: error.message };
   revalidatePath("/schedule");
-  return {};
 }

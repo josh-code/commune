@@ -81,12 +81,7 @@ export default async function SchedulePage() {
         {upcomingSlots.length === 0 && (
           <p className="text-sm text-slate-400">No upcoming assignments.</p>
         )}
-        {upcomingSlots.map(slot => {
-          const confirm = confirmAction.bind(null, slot.id);
-          const decline = declineAction.bind(null, slot.id);
-          const confirmVoid = async () => { await confirm(); };
-          const declineVoid = async () => { await decline(); };
-          return (
+        {upcomingSlots.map(slot => (
           <div key={slot.id} className="flex items-center gap-3 py-2 border-b border-slate-100 last:border-0">
             <div className="flex-1 min-w-0">
               <div className="text-sm font-medium text-slate-900">{slot.services?.name}</div>
@@ -101,12 +96,12 @@ export default async function SchedulePage() {
             </span>
             {slot.status === "pending" && (
               <div className="flex gap-1">
-                <form action={confirmVoid}>
+                <form action={confirmAction.bind(null, slot.id)}>
                   <button type="submit" className="text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 px-2 py-1 rounded-lg transition-colors">
                     Confirm
                   </button>
                 </form>
-                <form action={declineVoid}>
+                <form action={declineAction.bind(null, slot.id)}>
                   <button type="submit" className="text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 px-2 py-1 rounded-lg transition-colors">
                     Decline
                   </button>
@@ -114,8 +109,7 @@ export default async function SchedulePage() {
               </div>
             )}
           </div>
-          );
-        })}
+        ))}
 
         {pastSlots.length > 0 && (
           <details className="mt-4">
@@ -145,14 +139,13 @@ export default async function SchedulePage() {
         {(allServices ?? []).map(svc => {
           const isUnavailable = myUnavailableIds.has(svc.id);
           const isRostered = myRosteredServiceIds.has(svc.id);
-          const toggleBound = isUnavailable
+          const toggleAction = isUnavailable
             ? unmarkUnavailableAction.bind(null, svc.id)
             : markUnavailableAction.bind(null, svc.id);
-          const toggleVoid = async () => { await toggleBound(); };
 
           return (
             <div key={svc.id} className="py-2 border-b border-slate-100 last:border-0">
-              <form action={toggleVoid}>
+              <form action={toggleAction}>
                 <label className="flex items-center gap-3 cursor-pointer">
                   <input
                     type="checkbox"
@@ -194,7 +187,7 @@ export default async function SchedulePage() {
                   </span>
                   {r.reason && <span className="text-xs text-slate-400 ml-2">{r.reason}</span>}
                 </div>
-                <form action={async () => { "use server"; await removeRangeAction(r.id); }}>
+                <form action={removeRangeAction.bind(null, r.id)}>
                   <button type="submit" className="text-xs text-red-400 hover:text-red-700">Remove</button>
                 </form>
               </div>
@@ -203,7 +196,7 @@ export default async function SchedulePage() {
         )}
 
         {/* Add range form */}
-        <form action={async (formData: FormData) => { "use server"; await addRangeAction(formData); }} className="space-y-3">
+        <form action={addRangeAction} className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
               <label className="text-xs font-medium text-slate-600">From</label>

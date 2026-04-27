@@ -36,25 +36,14 @@ export default async function ServiceDetailPage({
     .from("team_member_positions")
     .select("profile_id, team_id, position_id, profiles(id, first_name, last_name)");
 
-  // Who has marked themselves unavailable for this service
-  const { data: unavailability } = await supabase
-    .from("service_unavailability")
-    .select("profile_id")
-    .eq("service_id", serviceId);
-
-  // Members who have a date range covering this service's date
+  // Members unavailable for this service (single-day per-service marks and date ranges)
   const { data: rangeRows } = await supabase
     .from("unavailability_ranges")
     .select("profile_id")
     .lte("start_date", service.date)
     .gte("end_date", service.date);
 
-  const rangeUnavailableIds = (rangeRows ?? []).map(r => r.profile_id);
-
-  const combinedUnavailableIds = [
-    ...(unavailability ?? []).map(u => u.profile_id),
-    ...rangeUnavailableIds,
-  ].filter((id, i, arr) => arr.indexOf(id) === i); // deduplicate
+  const combinedUnavailableIds = [...new Set((rangeRows ?? []).map(r => r.profile_id))];
 
   type TeamRow = {
     id: string;

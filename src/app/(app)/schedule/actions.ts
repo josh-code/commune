@@ -49,27 +49,30 @@ export async function declineAction(slotId: string): Promise<void> {
   revalidatePath("/dashboard");
 }
 
-export async function markUnavailableAction(serviceId: string): Promise<void> {
+export async function markUnavailableAction(serviceDate: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
-  await supabase
-    .from("service_unavailability")
-    .insert({ profile_id: user.id, service_id: serviceId });
-  // ignore duplicate key errors (23505) — idempotent
+  await supabase.from("unavailability_ranges").insert({
+    profile_id: user.id,
+    start_date: serviceDate,
+    end_date: serviceDate,
+  });
+  // ignore duplicate key errors — idempotent
 
   revalidatePath("/schedule");
 }
 
-export async function unmarkUnavailableAction(serviceId: string): Promise<void> {
+export async function unmarkUnavailableAction(serviceDate: string): Promise<void> {
   const user = await requireUser();
   const supabase = await createClient();
 
   await supabase
-    .from("service_unavailability")
+    .from("unavailability_ranges")
     .delete()
     .eq("profile_id", user.id)
-    .eq("service_id", serviceId);
+    .eq("start_date", serviceDate)
+    .eq("end_date", serviceDate);
 
   revalidatePath("/schedule");
 }

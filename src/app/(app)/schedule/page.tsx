@@ -54,21 +54,29 @@ export default async function SchedulePage() {
     .gte("date", today)
     .order("date");
 
-  // My unavailability
-  const { data: unavailability } = await supabase
-    .from("service_unavailability")
-    .select("service_id");
-
-  const myUnavailableIds = new Set((unavailability ?? []).map(u => u.service_id));
   const myRosteredServiceIds = new Set(typedSlots.map(s => s.service_id));
 
-  // My upcoming date ranges (end_date >= today)
+  // My upcoming date ranges (end_date >= today) — single source for all unavailability
   const { data: myRanges } = await supabase
     .from("unavailability_ranges")
     .select("id, start_date, end_date, reason")
     .eq("profile_id", user.id)
     .gte("end_date", today)
     .order("start_date");
+
+  // Compute per-service unavailability from ranges
+  const myUnavailableIds = new Set<string>();
+  const myMultiRangeCoveredIds = new Set<string>();
+  for (const svc of allServices ?? []) {
+    for (const range of myRanges ?? []) {
+      if (svc.date >= range.start_date && svc.date <= range.end_date) {
+        myUnavailableIds.add(svc.id);
+        if (range.start_date !== range.end_date) {
+          myMultiRangeCoveredIds.add(svc.id);
+        }
+      }
+    }
+  }
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -135,6 +143,7 @@ export default async function SchedulePage() {
         <ServiceUnavailabilityList
           services={allServices ?? []}
           unavailableIds={Array.from(myUnavailableIds)}
+          multiRangeCoveredIds={Array.from(myMultiRangeCoveredIds)}
           rosteredServiceIds={Array.from(myRosteredServiceIds)}
         />
       </div>

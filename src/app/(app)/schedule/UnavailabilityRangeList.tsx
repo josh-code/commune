@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useOptimistic, useRef, useState, useTransition } from "react";
 import { removeRangesAction } from "./actions";
 
 type Range = {
@@ -22,8 +22,14 @@ export function UnavailabilityRangeList({ ranges }: { ranges: Range[] }) {
   const [isPending, startTransition] = useTransition();
   const selectAllRef = useRef<HTMLInputElement>(null);
 
-  const allSelected = ranges.length > 0 && selected.size === ranges.length;
-  const someSelected = selected.size > 0 && selected.size < ranges.length;
+  const [optimisticRanges, removeOptimistic] = useOptimistic(
+    ranges,
+    (current: Range[], idsToRemove: string[]) =>
+      current.filter(r => !idsToRemove.includes(r.id)),
+  );
+
+  const allSelected = optimisticRanges.length > 0 && selected.size === optimisticRanges.length;
+  const someSelected = selected.size > 0 && selected.size < optimisticRanges.length;
 
   useEffect(() => {
     if (selectAllRef.current) {
@@ -32,7 +38,7 @@ export function UnavailabilityRangeList({ ranges }: { ranges: Range[] }) {
   }, [someSelected]);
 
   function toggleAll() {
-    setSelected(allSelected ? new Set() : new Set(ranges.map(r => r.id)));
+    setSelected(allSelected ? new Set() : new Set(optimisticRanges.map(r => r.id)));
   }
 
   function toggle(id: string) {
@@ -44,13 +50,15 @@ export function UnavailabilityRangeList({ ranges }: { ranges: Range[] }) {
   }
 
   function deleteSelected() {
+    const ids = [...selected];
     startTransition(async () => {
-      await removeRangesAction([...selected]);
+      removeOptimistic(ids);
       setSelected(new Set());
+      await removeRangesAction(ids);
     });
   }
 
-  if (ranges.length === 0) return null;
+  if (optimisticRanges.length === 0) return null;
 
   return (
     <div className="mb-4 border border-slate-200 rounded-lg overflow-hidden">
@@ -65,7 +73,9 @@ export function UnavailabilityRangeList({ ranges }: { ranges: Range[] }) {
           aria-label="Select all"
         />
         <span className="text-xs text-slate-500 flex-1 select-none">
-          {selected.size > 0 ? `${selected.size} of ${ranges.length} selected` : `${ranges.length} date range${ranges.length !== 1 ? "s" : ""}`}
+          {selected.size > 0
+            ? `${selected.size} of ${optimisticRanges.length} selected`
+            : `${optimisticRanges.length} date range${optimisticRanges.length !== 1 ? "s" : ""}`}
         </span>
         {selected.size > 0 && (
           <button
@@ -79,7 +89,7 @@ export function UnavailabilityRangeList({ ranges }: { ranges: Range[] }) {
       </div>
 
       {/* Rows */}
-      {ranges.map(r => (
+      {optimisticRanges.map(r => (
         <label
           key={r.id}
           className="flex items-center gap-3 px-3 py-2.5 border-b border-slate-100 last:border-0 cursor-pointer hover:bg-slate-50 transition-colors"

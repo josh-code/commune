@@ -37,7 +37,18 @@ export default async function TeamsPage() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-xl font-semibold text-slate-900">Teams</h1>
+        <Link
+          href="/admin/teams/new"
+          className="inline-flex items-center gap-1.5 text-sm font-medium bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700 transition-colors"
+        >
+          + New team
+        </Link>
       </div>
+      {(teams ?? []).length === 0 && (
+        <p className="text-sm text-slate-400">
+          No teams yet. <Link href="/admin/teams/new" className="text-indigo-600 hover:text-indigo-800">Create one →</Link>
+        </p>
+      )}
       <div className="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
         {(teams ?? []).map((team) => (
           <div key={team.id} className="flex items-center gap-4 px-5 py-4">

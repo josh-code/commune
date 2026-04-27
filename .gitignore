@@ -58,3 +58,6 @@ supabase/.branches
 
 # Vitest
 coverage/
+
+# Git worktrees
+.worktrees/

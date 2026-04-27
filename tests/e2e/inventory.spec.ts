@@ -18,15 +18,15 @@ test.describe("Inventory — admin flow", () => {
     await page.goto("/admin/inventory/categories");
 
     const catName = `E2E Cat ${Date.now()}`;
-    await page.getByLabel("New category name").fill(catName);
+    await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
     await expect(page.locator('input[name="name"]').last()).toHaveValue(catName);
 
     await page.goto("/admin/inventory/items/new");
-    await page.getByLabel("Item name").fill("E2E Test Chairs");
-    await page.getByLabel("Category").selectOption({ label: catName });
-    await page.getByLabel("Total quantity (ignored if tracked individually)").fill("10");
-    await page.getByLabel("Location (optional)").fill("Hall");
+    await page.locator('input[name="name"]').fill("E2E Test Chairs");
+    await page.locator('select[name="category_id"]').selectOption({ label: catName });
+    await page.locator('input[name="total_quantity"]').fill("10");
+    await page.locator('input[name="location"]').fill("Hall");
     await page.getByRole("button", { name: "Create item" }).click();
 
     await expect(page).toHaveURL(/\/admin\/inventory\/items\//);
@@ -36,7 +36,7 @@ test.describe("Inventory — admin flow", () => {
   test("admin sees inventory hub card on /admin", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin");
-    await expect(page.getByRole("link", { name: /Inventory/ })).toBeVisible();
+    await expect(page.locator('a[href="/admin/inventory"]')).toBeVisible();
   });
 
   test("inventory tab appears in sidebar for everyone", async ({ page }) => {
@@ -52,15 +52,15 @@ test.describe("Inventory — reservation flow", () => {
     // Ensure a category exists
     await page.goto("/admin/inventory/categories");
     const catName = `Auto ${Date.now()}`;
-    await page.getByLabel("New category name").fill(catName);
+    await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
 
     // Create an auto-confirm item
     await page.goto("/admin/inventory/items/new");
     const itemName = `AutoItem ${Date.now()}`;
-    await page.getByLabel("Item name").fill(itemName);
-    await page.getByLabel("Category").selectOption({ label: catName });
-    await page.getByLabel("Total quantity (ignored if tracked individually)").fill("3");
+    await page.locator('input[name="name"]').fill(itemName);
+    await page.locator('select[name="category_id"]').selectOption({ label: catName });
+    await page.locator('input[name="total_quantity"]').fill("3");
     await page.getByRole("button", { name: "Create item" }).click();
 
     // Reserve from the catalogue

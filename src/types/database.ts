@@ -34,6 +34,200 @@ export type Database = {
   }
   public: {
     Tables: {
+      inventory_categories: {
+        Row: {
+          color: string
+          created_at: string
+          icon: string | null
+          id: string
+          is_public: boolean
+          name: string
+          order: number
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          name: string
+          order?: number
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          name?: string
+          order?: number
+        }
+        Relationships: []
+      }
+      inventory_items: {
+        Row: {
+          approval_required: boolean
+          category_id: string
+          condition: Database["public"]["Enums"]["inventory_condition"]
+          condition_notes: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          is_public: boolean
+          location: string | null
+          name: string
+          photo_url: string | null
+          serial_number: string | null
+          total_quantity: number
+          tracked_individually: boolean
+        }
+        Insert: {
+          approval_required?: boolean
+          category_id: string
+          condition?: Database["public"]["Enums"]["inventory_condition"]
+          condition_notes?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          location?: string | null
+          name: string
+          photo_url?: string | null
+          serial_number?: string | null
+          total_quantity?: number
+          tracked_individually?: boolean
+        }
+        Update: {
+          approval_required?: boolean
+          category_id?: string
+          condition?: Database["public"]["Enums"]["inventory_condition"]
+          condition_notes?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          location?: string | null
+          name?: string
+          photo_url?: string | null
+          serial_number?: string | null
+          total_quantity?: number
+          tracked_individually?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_reservations: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          checked_out_at: string | null
+          created_at: string
+          created_by: string
+          end_date: string
+          id: string
+          item_id: string
+          notes: string | null
+          profile_id: string
+          quantity: number
+          rejection_reason: string | null
+          return_condition:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          return_notes: string | null
+          returned_at: string | null
+          start_date: string
+          status: Database["public"]["Enums"]["reservation_status"]
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checked_out_at?: string | null
+          created_at?: string
+          created_by: string
+          end_date: string
+          id?: string
+          item_id: string
+          notes?: string | null
+          profile_id: string
+          quantity?: number
+          rejection_reason?: string | null
+          return_condition?:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          return_notes?: string | null
+          returned_at?: string | null
+          start_date: string
+          status?: Database["public"]["Enums"]["reservation_status"]
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          checked_out_at?: string | null
+          created_at?: string
+          created_by?: string
+          end_date?: string
+          id?: string
+          item_id?: string
+          notes?: string | null
+          profile_id?: string
+          quantity?: number
+          rejection_reason?: string | null
+          return_condition?:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          return_notes?: string | null
+          returned_at?: string | null
+          start_date?: string
+          status?: Database["public"]["Enums"]["reservation_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_reservations_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_reservations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           address: string | null
@@ -458,10 +652,19 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      is_logistics_or_admin: { Args: never; Returns: boolean }
     }
     Enums: {
+      inventory_condition: "good" | "needs_repair" | "out_of_service"
       profile_role: "admin" | "member" | "logistics"
       profile_status: "invited" | "active" | "on_leave" | "left"
+      reservation_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "checked_out"
+        | "returned"
+        | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -592,8 +795,17 @@ export const Constants = {
   },
   public: {
     Enums: {
+      inventory_condition: ["good", "needs_repair", "out_of_service"],
       profile_role: ["admin", "member", "logistics"],
       profile_status: ["invited", "active", "on_leave", "left"],
+      reservation_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "checked_out",
+        "returned",
+        "cancelled",
+      ],
     },
   },
 } as const

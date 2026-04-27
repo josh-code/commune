@@ -20,7 +20,7 @@ test.describe("Inventory — admin flow", () => {
     const catName = `E2E Cat ${Date.now()}`;
     await page.getByLabel("New category name").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
-    await expect(page.getByDisplayValue(catName)).toBeVisible();
+    await expect(page.locator('input[name="name"]').last()).toHaveValue(catName);
 
     await page.goto("/admin/inventory/items/new");
     await page.getByLabel("Item name").fill("E2E Test Chairs");
@@ -30,7 +30,7 @@ test.describe("Inventory — admin flow", () => {
     await page.getByRole("button", { name: "Create item" }).click();
 
     await expect(page).toHaveURL(/\/admin\/inventory\/items\//);
-    await expect(page.getByDisplayValue("E2E Test Chairs")).toBeVisible();
+    await expect(page.locator('input[name="name"]').first()).toHaveValue("E2E Test Chairs");
   });
 
   test("admin sees inventory hub card on /admin", async ({ page }) => {

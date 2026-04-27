@@ -1,6 +1,7 @@
 // src/app/(app)/roster/[id]/RosterBuilder.tsx
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { findConflictingProfileIds } from "@/lib/rostering";
@@ -111,8 +112,9 @@ export function RosterBuilder({ service, teams, slots, eligible, unavailableProf
 
   return (
     <div>
+      <Link href="/roster" className="text-sm text-slate-500 hover:text-slate-900">← Roster</Link>
       {/* Page header */}
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
+      <div className="flex items-start justify-between gap-4 mt-1 mb-6 flex-wrap">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-semibold text-slate-900">{dateStr}</h1>

@@ -35,7 +35,8 @@ export default async function TeamsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <Link href="/admin" className="text-sm text-slate-500 hover:text-slate-900">← Admin</Link>
+      <div className="flex items-center justify-between mt-1 mb-6">
         <h1 className="text-xl font-semibold text-slate-900">Teams</h1>
         <Link
           href="/admin/teams/new"

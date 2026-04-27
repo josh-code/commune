@@ -2,8 +2,9 @@
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
-import { confirmAction, declineAction, addRangeAction, removeRangeAction } from "./actions";
+import { confirmAction, declineAction, addRangeAction } from "./actions";
 import { ServiceUnavailabilityList } from "./ServiceUnavailabilityList";
+import { UnavailabilityRangeList } from "./UnavailabilityRangeList";
 
 const SLOT_STATUS_STYLES: Record<string, string> = {
   pending:    "bg-amber-100 text-amber-700",
@@ -156,25 +157,7 @@ export default async function SchedulePage() {
         </p>
 
         {/* Existing ranges */}
-        {(myRanges ?? []).length > 0 && (
-          <div className="space-y-2 mb-4">
-            {(myRanges ?? []).map(r => (
-              <div key={r.id} className="flex items-center gap-3 text-sm py-1.5 border-b border-slate-100 last:border-0">
-                <div className="flex-1">
-                  <span className="text-slate-800 font-medium">
-                    {new Date(r.start_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
-                    {" — "}
-                    {new Date(r.end_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
-                  </span>
-                  {r.reason && <span className="text-xs text-slate-400 ml-2">{r.reason}</span>}
-                </div>
-                <form action={removeRangeAction.bind(null, r.id)}>
-                  <button type="submit" className="text-xs text-red-400 hover:text-red-700">Remove</button>
-                </form>
-              </div>
-            ))}
-          </div>
-        )}
+        <UnavailabilityRangeList ranges={myRanges ?? []} />
 
         {/* Add range form */}
         <form action={addRangeAction} className="space-y-3">

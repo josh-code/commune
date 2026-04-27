@@ -96,22 +96,16 @@ export async function addRangeAction(formData: FormData): Promise<void> {
   revalidatePath("/schedule");
 }
 
-export async function removeRangeAction(rangeId: string): Promise<void> {
+export async function removeRangesAction(ids: string[]): Promise<void> {
   const user = await requireUser();
+  if (!ids.length) return;
+
   const supabase = await createClient();
-
-  const { data: range } = await supabase
-    .from("unavailability_ranges")
-    .select("profile_id")
-    .eq("id", rangeId)
-    .maybeSingle();
-
-  if (!range || range.profile_id !== user.id) return;
-
   await supabase
     .from("unavailability_ranges")
     .delete()
-    .eq("id", rangeId);
+    .in("id", ids)
+    .eq("profile_id", user.id); // RLS safety: only own ranges
 
   revalidatePath("/schedule");
 }

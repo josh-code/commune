@@ -2,7 +2,8 @@
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
-import { confirmAction, declineAction, markUnavailableAction, unmarkUnavailableAction, addRangeAction, removeRangeAction } from "./actions";
+import { confirmAction, declineAction, addRangeAction, removeRangeAction } from "./actions";
+import { ServiceUnavailabilityList } from "./ServiceUnavailabilityList";
 
 const SLOT_STATUS_STYLES: Record<string, string> = {
   pending:    "bg-amber-100 text-amber-700",
@@ -11,8 +12,6 @@ const SLOT_STATUS_STYLES: Record<string, string> = {
   unassigned: "bg-slate-100 text-slate-500",
 };
 
-const UNAVAILABILITY_WARNING =
-  "You're already rostered for this service — marking unavailable won't remove your assignment. Contact your admin.";
 
 export default async function SchedulePage() {
   const user = await requireUser();
@@ -133,38 +132,11 @@ export default async function SchedulePage() {
       <div className="bg-white rounded-xl border border-slate-200 p-5">
         <h2 className="text-sm font-semibold text-slate-700 mb-1">Services I can&#39;t make</h2>
         <p className="text-xs text-slate-400 mb-4">Check a service to let the admin know you&#39;re unavailable.</p>
-        {(allServices ?? []).length === 0 && (
-          <p className="text-sm text-slate-400">No upcoming services.</p>
-        )}
-        {(allServices ?? []).map(svc => {
-          const isUnavailable = myUnavailableIds.has(svc.id);
-          const isRostered = myRosteredServiceIds.has(svc.id);
-          const toggleAction = isUnavailable
-            ? unmarkUnavailableAction.bind(null, svc.id)
-            : markUnavailableAction.bind(null, svc.id);
-
-          return (
-            <div key={svc.id} className="py-2 border-b border-slate-100 last:border-0">
-              <form action={toggleAction}>
-                <label className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    defaultChecked={isUnavailable}
-                    onChange={e => (e.currentTarget.form as HTMLFormElement).requestSubmit()}
-                    className="rounded border-slate-300 text-indigo-600"
-                  />
-                  <span className="text-sm text-slate-800">{svc.name}</span>
-                  <span className="text-xs text-slate-400 ml-auto">
-                    {new Date(svc.date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
-                  </span>
-                </label>
-              </form>
-              {isRostered && isUnavailable && (
-                <p className="text-xs text-amber-600 mt-1 ml-7">{UNAVAILABILITY_WARNING}</p>
-              )}
-            </div>
-          );
-        })}
+        <ServiceUnavailabilityList
+          services={allServices ?? []}
+          unavailableIds={Array.from(myUnavailableIds)}
+          rosteredServiceIds={Array.from(myRosteredServiceIds)}
+        />
       </div>
 
       {/* Dates I'm away */}

@@ -21,9 +21,9 @@ Public read is handled by the bucket setting — no signed URLs needed for displ
 | UPDATE | Authenticated + `is_logistics_or_admin()` |
 | DELETE | Authenticated + `is_logistics_or_admin()` |
 
-**File path pattern:** `items/{uuid}.{ext}`
+**File path pattern:** `items/{uuid}.jpg`
 
-A client-generated UUID is used per file. This avoids any dependency on the item ID, which does not exist yet at create time.
+A client-generated UUID is used per file. All uploads are stored as JPEG (output of the compression step). This avoids any dependency on the item ID, which does not exist yet at create time.
 
 ---
 
@@ -36,6 +36,8 @@ A client-generated UUID is used per file. This avoids any dependency on the item
 type ImageUploadProps = {
   initialUrl?: string | null;   // shown immediately in edit mode
   onUpload: (url: string | null) => void;
+  maxWidthPx?: number;           // default: 1200 — longest edge capped at this value
+  quality?: number;              // 0–1, default: 0.82 — JPEG compression quality
 };
 ```
 
@@ -43,11 +45,14 @@ type ImageUploadProps = {
 
 1. Renders a dashed drag-and-drop zone with an upload icon and label. Also accepts click-to-browse.
 2. On file drop/select:
-   - Validates: type must be `image/*`, size must be ≤ 5 MB. Shows an inline error if invalid.
-   - Uploads immediately to Supabase Storage (`item-photos/items/{uuid}.{ext}`).
-   - Shows a spinner while the upload is in-flight.
-3. On upload success: replaces the zone with a square image preview. An × button overlaid on the preview clears the selection (calls `onUpload(null)`).
+   - Validates: type must be `image/*`, size must be ≤ 5 MB (original). Shows an inline error if invalid.
+   - **Compresses:** draws the image onto an offscreen canvas scaled so the longest edge ≤ `maxWidthPx` (aspect ratio preserved), then exports as `image/jpeg` at `quality`. This happens entirely in the browser via the Canvas API — no extra library.
+   - Uploads the compressed JPEG blob to Supabase Storage (`item-photos/items/{uuid}.jpg`).
+   - Shows a spinner while compression + upload are in-flight.
+3. On upload success: replaces the zone with a square image preview (from the compressed result). An × button overlaid on the preview clears the selection (calls `onUpload(null)`).
 4. Calls `onUpload(url)` whenever the URL changes (new upload or clear).
+
+**Default parameters** used on both item forms: `maxWidthPx=1200`, `quality=0.82`. Props exist for reuse in other contexts.
 
 **Edit mode:** If `initialUrl` is provided, the component renders the preview immediately on mount — no re-upload. From that point, replacement and clearing work identically to create mode.
 
@@ -110,7 +115,7 @@ Strip everything up to and including `/item-photos/` to get the storage path.
 
 ## 6. Out of Scope
 
-- Image resizing or optimisation (store original)
+- Server-side image processing (compression is client-only via Canvas API)
 - Multiple photos per item
 - Member-side upload
 - Bulk photo import

@@ -42,8 +42,8 @@ export async function updateItemAction(id: string, formData: FormData): Promise<
     })
     .eq("id", id);
 
-  revalidatePath(`/admin/inventory/items/${id}`);
-  revalidatePath("/admin/inventory/items");
+  revalidatePath(`/inventory/manage/items/${id}`);
+  revalidatePath("/inventory/manage/items");
 }
 
 export async function deleteItemAction(id: string): Promise<void> {
@@ -59,5 +59,5 @@ export async function deleteItemAction(id: string): Promise<void> {
   if (count && count > 0) return;
 
   await supabase.from("inventory_items").delete().eq("id", id);
-  redirect("/admin/inventory/items");
+  redirect("/inventory/manage/items");
 }

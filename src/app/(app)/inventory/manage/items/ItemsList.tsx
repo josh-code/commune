@@ -66,7 +66,7 @@ export function ItemsList({ items, categories }: { items: Item[]; categories: Ca
         {filtered.map(i => {
           const c = catById.get(i.category_id);
           return (
-            <Link key={i.id} href={`/admin/inventory/items/${i.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
+            <Link key={i.id} href={`/inventory/manage/items/${i.id}`} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 transition-colors">
               {c && <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: c.color }} />}
               <span className="flex-1 text-sm font-medium text-slate-900">{i.name}</span>
               {!i.is_public && <span className="text-xs text-slate-400">hidden</span>}

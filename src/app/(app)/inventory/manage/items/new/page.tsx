@@ -14,12 +14,12 @@ export default async function NewItemPage() {
     .order("order");
 
   if (!categories || categories.length === 0) {
-    redirect("/admin/inventory/categories");
+    redirect("/inventory/manage/categories");
   }
 
   return (
     <div className="max-w-md">
-      <Link href="/admin/inventory/items" className="text-sm text-slate-500 hover:text-slate-900">← Items</Link>
+      <Link href="/inventory/manage/items" className="text-sm text-slate-500 hover:text-slate-900">← Items</Link>
       <h1 className="text-xl font-semibold text-slate-900 mt-1 mb-6">New item</h1>
 
       <form action={createItemAction} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">

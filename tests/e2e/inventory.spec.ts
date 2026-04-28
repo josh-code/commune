@@ -15,33 +15,33 @@ async function loginAsAdmin(page: Page) {
 test.describe("Inventory — admin flow", () => {
   test("admin creates a category and a public bulk item", async ({ page }) => {
     await loginAsAdmin(page);
-    await page.goto("/admin/inventory/categories");
+    await page.goto("/inventory/manage/categories");
 
     const catName = `E2E Cat ${Date.now()}`;
     await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
     await expect(page.locator('input[name="name"]').last()).toHaveValue(catName);
 
-    await page.goto("/admin/inventory/items/new");
+    await page.goto("/inventory/manage/items/new");
     await page.locator('input[name="name"]').fill("E2E Test Chairs");
     await page.locator('select[name="category_id"]').selectOption({ label: catName });
     await page.locator('input[name="total_quantity"]').fill("10");
     await page.locator('input[name="location"]').fill("Hall");
     await page.getByRole("button", { name: "Create item" }).click();
 
-    await expect(page).toHaveURL(/\/admin\/inventory\/items\//);
+    await expect(page).toHaveURL(/\/inventory\/manage\/items\//);
     await expect(page.locator('input[name="name"]').first()).toHaveValue("E2E Test Chairs");
   });
 
   test("admin sees inventory hub card on /admin", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin");
-    await expect(page.locator('a[href="/admin/inventory"]')).toBeVisible();
+    await expect(page.locator('a[href="/inventory/manage"]').first()).toBeVisible();
   });
 
   test("inventory tab appears in sidebar for everyone", async ({ page }) => {
     await loginAsAdmin(page);
-    await expect(page.getByRole("link", { name: "Inventory" })).toBeVisible();
+    await expect(page.getByRole("link", { name: "Inventory", exact: true })).toBeVisible();
   });
 });
 
@@ -50,13 +50,13 @@ test.describe("Inventory — reservation flow", () => {
     await loginAsAdmin(page);
 
     // Ensure a category exists
-    await page.goto("/admin/inventory/categories");
+    await page.goto("/inventory/manage/categories");
     const catName = `Auto ${Date.now()}`;
     await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
 
     // Create an auto-confirm item
-    await page.goto("/admin/inventory/items/new");
+    await page.goto("/inventory/manage/items/new");
     const itemName = `AutoItem ${Date.now()}`;
     await page.locator('input[name="name"]').fill(itemName);
     await page.locator('select[name="category_id"]').selectOption({ label: catName });

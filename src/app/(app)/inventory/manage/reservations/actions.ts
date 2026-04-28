@@ -12,7 +12,7 @@ export async function approveReservationAction(id: string): Promise<void> {
     .update({ status: "approved", approved_by: user.id, approved_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", "pending");
-  revalidatePath("/admin/inventory/reservations");
+  revalidatePath("/inventory/manage/reservations");
 }
 
 export async function rejectReservationAction(id: string, formData: FormData): Promise<void> {
@@ -24,7 +24,7 @@ export async function rejectReservationAction(id: string, formData: FormData): P
     .update({ status: "rejected", approved_by: user.id, approved_at: new Date().toISOString(), rejection_reason: reason })
     .eq("id", id)
     .eq("status", "pending");
-  revalidatePath("/admin/inventory/reservations");
+  revalidatePath("/inventory/manage/reservations");
 }
 
 export async function checkoutReservationAction(id: string): Promise<void> {
@@ -35,7 +35,7 @@ export async function checkoutReservationAction(id: string): Promise<void> {
     .update({ status: "checked_out", checked_out_at: new Date().toISOString() })
     .eq("id", id)
     .eq("status", "approved");
-  revalidatePath("/admin/inventory/reservations");
+  revalidatePath("/inventory/manage/reservations");
 }
 
 export async function returnReservationAction(id: string, formData: FormData): Promise<void> {
@@ -66,5 +66,5 @@ export async function returnReservationAction(id: string, formData: FormData): P
     await supabase.from("inventory_items").update({ condition }).eq("id", r.item_id);
   }
 
-  revalidatePath("/admin/inventory/reservations");
+  revalidatePath("/inventory/manage/reservations");
 }

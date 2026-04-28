@@ -108,7 +108,7 @@ export default async function DashboardPage() {
             {pendingApprovalCount > 0 && overdueCount > 0 && " · "}
             {overdueCount > 0 && <>{overdueCount} overdue</>}
           </span>
-          <Link href="/admin/inventory/reservations" className="text-xs font-medium text-amber-700 hover:text-amber-900">
+          <Link href="/inventory/manage/reservations" className="text-xs font-medium text-amber-700 hover:text-amber-900">
             Review →
           </Link>
         </div>

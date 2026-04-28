@@ -28,7 +28,7 @@ export async function createCategoryAction(formData: FormData): Promise<void> {
     order: (maxOrder?.order ?? 0) + 1,
   });
 
-  revalidatePath("/admin/inventory/categories");
+  revalidatePath("/inventory/manage/categories");
 }
 
 export async function updateCategoryAction(id: string, formData: FormData): Promise<void> {
@@ -44,7 +44,7 @@ export async function updateCategoryAction(id: string, formData: FormData): Prom
     .update({ name, color, is_public: isPublic })
     .eq("id", id);
 
-  revalidatePath("/admin/inventory/categories");
+  revalidatePath("/inventory/manage/categories");
 }
 
 export async function deleteCategoryAction(id: string): Promise<{ error?: string } | void> {
@@ -61,5 +61,5 @@ export async function deleteCategoryAction(id: string): Promise<{ error?: string
   }
 
   await supabase.from("inventory_categories").delete().eq("id", id);
-  revalidatePath("/admin/inventory/categories");
+  revalidatePath("/inventory/manage/categories");
 }

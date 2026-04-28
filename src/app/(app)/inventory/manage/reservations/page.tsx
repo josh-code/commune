@@ -15,7 +15,7 @@ export default async function AdminReservationsPage() {
 
   return (
     <div className="max-w-3xl">
-      <Link href="/admin/inventory" className="text-sm text-slate-500 hover:text-slate-900">← Inventory</Link>
+      <Link href="/inventory/manage" className="text-sm text-slate-500 hover:text-slate-900">← Inventory</Link>
       <h1 className="text-xl font-semibold text-slate-900 mt-1 mb-6">Reservations</h1>
       <AdminReservationsList reservations={(reservations ?? []) as Parameters<typeof AdminReservationsList>[0]["reservations"]} />
     </div>

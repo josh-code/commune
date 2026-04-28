@@ -33,7 +33,7 @@ export default async function ItemDetailPage({ params }: { params: Promise<{ id:
 
   return (
     <div className="max-w-md">
-      <Link href="/admin/inventory/items" className="text-sm text-slate-500 hover:text-slate-900">← Items</Link>
+      <Link href="/inventory/manage/items" className="text-sm text-slate-500 hover:text-slate-900">← Items</Link>
       <h1 className="text-xl font-semibold text-slate-900 mt-1 mb-6">{item.name}</h1>
 
       <EditItemForm item={item} categories={categories ?? []} />

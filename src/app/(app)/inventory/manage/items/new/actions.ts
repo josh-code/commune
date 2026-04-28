@@ -45,5 +45,5 @@ export async function createItemAction(formData: FormData): Promise<void> {
 
   if (error || !item) return;
 
-  redirect(`/admin/inventory/items/${item.id}`);
+  redirect(`/inventory/manage/items/${item.id}`);
 }

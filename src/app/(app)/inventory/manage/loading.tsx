@@ -1,4 +1,4 @@
-// src/app/(app)/admin/inventory/loading.tsx
+// src/app/(app)/inventory/manage/loading.tsx
 export default function Loading() {
   return (
     <div className="animate-pulse">

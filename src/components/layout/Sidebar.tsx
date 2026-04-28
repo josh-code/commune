@@ -9,6 +9,7 @@ import {
   Settings,
   ClipboardList,
   Boxes,
+  Wrench,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -24,20 +25,24 @@ type NavItem = {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
+  staffOnly?: boolean;
+  indent?: boolean;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/people",    label: "People",    icon: Users },
-  { href: "/schedule",  label: "Schedule",  icon: Calendar },
-  { href: "/inventory", label: "Inventory", icon: Boxes },
-  { href: "/roster",    label: "Roster",    icon: ClipboardList, adminOnly: true },
-  { href: "/admin",     label: "Admin",     icon: Settings, adminOnly: true },
+  { href: "/dashboard",        label: "Dashboard",        icon: LayoutDashboard },
+  { href: "/people",           label: "People",           icon: Users },
+  { href: "/schedule",         label: "Schedule",         icon: Calendar },
+  { href: "/inventory",        label: "Inventory",        icon: Boxes },
+  { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
+  { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
+  { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
 
 export function Sidebar({ firstName, lastName, role }: SidebarProps) {
   const pathname = usePathname();
   const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
+  const isStaff = role === "admin" || role === "logistics";
 
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 bg-white border-r border-slate-200 z-20">
@@ -51,8 +56,9 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly, staffOnly, indent }) => {
           if (adminOnly && role !== "admin") return null;
+          if (staffOnly && !isStaff) return null;
           const active =
             pathname === href || pathname.startsWith(href + "/");
           return (
@@ -60,7 +66,8 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
               key={href}
               href={href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                "flex items-center gap-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                indent ? "px-5" : "px-3",
                 active
                   ? "bg-indigo-50 text-indigo-600"
                   : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",

@@ -17,7 +17,7 @@ export default async function CategoriesPage() {
 
   return (
     <div className="max-w-2xl">
-      <Link href="/admin/inventory" className="text-sm text-slate-500 hover:text-slate-900">← Inventory</Link>
+      <Link href="/inventory/manage" className="text-sm text-slate-500 hover:text-slate-900">← Inventory</Link>
       <h1 className="text-xl font-semibold text-slate-900 mt-1 mb-6">Categories</h1>
 
       <CategoriesEditor categories={categories ?? []} />

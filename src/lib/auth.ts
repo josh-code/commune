@@ -46,3 +46,9 @@ export async function requireAdmin(): Promise<SessionUser> {
   if (user.role !== "admin") redirect("/dashboard");
   return user;
 }
+
+export async function requireLogisticsOrAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role !== "admin" && user.role !== "logistics") redirect("/dashboard");
+  return user;
+}

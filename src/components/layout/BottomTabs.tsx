@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Calendar, Settings } from "lucide-react";
+import { LayoutDashboard, Boxes, Calendar, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BottomTabsProps = {
@@ -13,9 +13,9 @@ export function BottomTabs({ role }: BottomTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { href: "/dashboard", label: "Home",     icon: LayoutDashboard },
-    { href: "/people",    label: "People",   icon: Users },
-    { href: "/schedule",  label: "Schedule", icon: Calendar },
+    { href: "/dashboard", label: "Home",      icon: LayoutDashboard },
+    { href: "/inventory", label: "Inventory", icon: Boxes },
+    { href: "/schedule",  label: "Schedule",  icon: Calendar },
     ...(role === "admin"
       ? [{ href: "/admin", label: "Admin", icon: Settings }]
       : []),

@@ -87,7 +87,10 @@ export default async function DashboardPage() {
               return (
                 <div key={r.id} className="flex items-center gap-3 text-sm py-1">
                   <span className="flex-1 text-slate-800">{it?.name ?? "—"}</span>
-                  <span className="text-xs text-slate-500">{r.start_date} → {r.end_date}</span>
+                  <span className="text-xs text-slate-500">
+                    {new Date(r.start_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}
+                    {r.start_date !== r.end_date && ` → ${new Date(r.end_date + "T00:00:00").toLocaleDateString("en-AU", { day: "numeric", month: "short" })}`}
+                  </span>
                   <span className="text-xs text-indigo-600 capitalize">{r.status.replace("_", " ")}</span>
                 </div>
               );

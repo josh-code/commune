@@ -34,6 +34,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      hospitality_categories: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          { foreignKeyName: "hospitality_categories_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      hospitality_items: {
+        Row: {
+          category_id: string
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          category_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          category_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          { foreignKeyName: "hospitality_items_category_id_fkey"; columns: ["category_id"]; referencedRelation: "hospitality_categories"; referencedColumns: ["id"] },
+          { foreignKeyName: "hospitality_items_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      hospitality_needs: {
+        Row: {
+          created_at: string
+          created_by: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          item_id: string
+          notes: string | null
+          quantity: string
+          requested_at: string | null
+          service_id: string
+          status: Database["public"]["Enums"]["hospitality_need_status"]
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_id: string
+          notes?: string | null
+          quantity: string
+          requested_at?: string | null
+          service_id: string
+          status?: Database["public"]["Enums"]["hospitality_need_status"]
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          item_id?: string
+          notes?: string | null
+          quantity?: string
+          requested_at?: string | null
+          service_id?: string
+          status?: Database["public"]["Enums"]["hospitality_need_status"]
+        }
+        Relationships: [
+          { foreignKeyName: "hospitality_needs_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "hospitality_needs_fulfilled_by_fkey"; columns: ["fulfilled_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "hospitality_needs_item_id_fkey"; columns: ["item_id"]; referencedRelation: "hospitality_items"; referencedColumns: ["id"] },
+          { foreignKeyName: "hospitality_needs_service_id_fkey"; columns: ["service_id"]; referencedRelation: "services"; referencedColumns: ["id"] }
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read_at: string | null
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: [
+          { foreignKeyName: "notifications_recipient_id_fkey"; columns: ["recipient_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
       inventory_categories: {
         Row: {
           color: string
@@ -652,9 +778,18 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      is_hospitality_or_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
       is_logistics_or_admin: { Args: never; Returns: boolean }
+      request_hospitality_order: {
+        Args: { p_service_id: string }
+        Returns: number
+      }
     }
     Enums: {
+      hospitality_need_status: "needed" | "requested" | "fulfilled"
       inventory_condition: "good" | "needs_repair" | "out_of_service"
       profile_role: "admin" | "member" | "logistics"
       profile_status: "invited" | "active" | "on_leave" | "left"

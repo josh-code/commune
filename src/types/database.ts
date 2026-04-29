@@ -34,6 +34,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      brief_attachments: {
+        Row: {
+          brief_id: string
+          file_name: string
+          file_url: string
+          id: string
+          mime_type: string
+          size_bytes: number
+          uploaded_at: string
+          uploaded_by: string
+        }
+        Insert: {
+          brief_id: string
+          file_name: string
+          file_url: string
+          id?: string
+          mime_type: string
+          size_bytes: number
+          uploaded_at?: string
+          uploaded_by: string
+        }
+        Update: {
+          brief_id?: string
+          file_name?: string
+          file_url?: string
+          id?: string
+          mime_type?: string
+          size_bytes?: number
+          uploaded_at?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          { foreignKeyName: "brief_attachments_brief_id_fkey"; columns: ["brief_id"]; referencedRelation: "service_briefs"; referencedColumns: ["id"] },
+          { foreignKeyName: "brief_attachments_uploaded_by_fkey"; columns: ["uploaded_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      brief_verses: {
+        Row: {
+          book: string
+          brief_id: string
+          chapter: number
+          id: string
+          position: number
+          verse_end: number | null
+          verse_start: number
+          version_override: string | null
+        }
+        Insert: {
+          book: string
+          brief_id: string
+          chapter: number
+          id?: string
+          position: number
+          verse_end?: number | null
+          verse_start: number
+          version_override?: string | null
+        }
+        Update: {
+          book?: string
+          brief_id?: string
+          chapter?: number
+          id?: string
+          position?: number
+          verse_end?: number | null
+          verse_start?: number
+          version_override?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "brief_verses_brief_id_fkey"; columns: ["brief_id"]; referencedRelation: "service_briefs"; referencedColumns: ["id"] }
+        ]
+      }
       inventory_categories: {
         Row: {
           color: string
@@ -463,6 +534,41 @@ export type Database = {
           },
         ]
       }
+      service_briefs: {
+        Row: {
+          created_at: string
+          deadline: string
+          default_bible_version: string
+          id: string
+          sermon_notes: string | null
+          sermon_submitted_at: string | null
+          sermon_title: string | null
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          deadline: string
+          default_bible_version?: string
+          id?: string
+          sermon_notes?: string | null
+          sermon_submitted_at?: string | null
+          sermon_title?: string | null
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          deadline?: string
+          default_bible_version?: string
+          id?: string
+          sermon_notes?: string | null
+          sermon_submitted_at?: string | null
+          sermon_title?: string | null
+          service_id?: string
+        }
+        Relationships: [
+          { foreignKeyName: "service_briefs_service_id_fkey"; columns: ["service_id"]; referencedRelation: "services"; referencedColumns: ["id"] }
+        ]
+      }
       swap_requests: {
         Row: {
           created_at: string
@@ -653,6 +759,18 @@ export type Database = {
     Functions: {
       is_admin: { Args: never; Returns: boolean }
       is_logistics_or_admin: { Args: never; Returns: boolean }
+      is_media_or_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
+      is_service_speaker: {
+        Args: { sid: string }
+        Returns: boolean
+      }
+      notify_brief_submitted: {
+        Args: { p_brief_id: string }
+        Returns: number
+      }
     }
     Enums: {
       inventory_condition: "good" | "needs_repair" | "out_of_service"

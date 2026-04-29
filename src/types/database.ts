@@ -252,6 +252,35 @@ export type Database = {
           { foreignKeyName: "library_reservations_profile_id_fkey"; columns: ["profile_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
         ]
       }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json
+          read_at: string | null
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json
+          read_at?: string | null
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: [
+          { foreignKeyName: "notifications_recipient_id_fkey"; columns: ["recipient_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
       inventory_categories: {
         Row: {
           color: string

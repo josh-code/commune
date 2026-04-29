@@ -12,6 +12,7 @@ import {
   Wrench,
   Music,
   UtensilsCrossed,
+  Grid3x3,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -20,7 +21,7 @@ import { NotificationBadge } from "@/components/notifications/NotificationBadge"
 type SidebarProps = {
   firstName: string;
   lastName: string;
-  role: "admin" | "member" | "logistics";
+  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
 };
 
 type NavItem = {
@@ -29,6 +30,8 @@ type NavItem = {
   icon: React.ComponentType<{ className?: string }>;
   adminOnly?: boolean;
   staffOnly?: boolean;
+  librarianOrAdmin?: boolean;
+  rosterGrid?: boolean;        // NEW: admin OR roster_maker (team-leader visibility evaluated server-side)
   indent?: boolean;
 };
 
@@ -41,6 +44,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/worship/songs",    label: "Song bank",        icon: Music },
   { href: "/hospitality",      label: "Hospitality",      icon: UtensilsCrossed },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
+  { href: "/roster/grid",      label: "Roster grid",      icon: Grid3x3, rosterGrid: true, indent: true },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
 
@@ -61,9 +65,11 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
 
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5">
-        {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly, staffOnly, indent }) => {
+        {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly, staffOnly, librarianOrAdmin, rosterGrid, indent }) => {
           if (adminOnly && role !== "admin") return null;
           if (staffOnly && !isStaff) return null;
+          if (librarianOrAdmin && role !== "admin" && role !== "librarian") return null;
+          if (rosterGrid && role !== "admin" && role !== "roster_maker") return null;
           const active =
             pathname === href || pathname.startsWith(href + "/");
           return (

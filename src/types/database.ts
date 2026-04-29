@@ -914,7 +914,7 @@ export type Database = {
     Enums: {
       hospitality_need_status: "needed" | "requested" | "fulfilled"
       inventory_condition: "good" | "needs_repair" | "out_of_service"
-      profile_role: "admin" | "member" | "logistics"
+      profile_role: "admin" | "member" | "logistics" | "librarian" | "roster_maker"
       profile_status: "invited" | "active" | "on_leave" | "left"
       reservation_status:
         | "pending"
@@ -1054,7 +1054,7 @@ export const Constants = {
   public: {
     Enums: {
       inventory_condition: ["good", "needs_repair", "out_of_service"],
-      profile_role: ["admin", "member", "logistics"],
+      profile_role: ["admin", "member", "logistics", "librarian", "roster_maker"],
       profile_status: ["invited", "active", "on_leave", "left"],
       reservation_status: [
         "pending",

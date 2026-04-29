@@ -38,7 +38,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/schedule",         label: "Schedule",         icon: Calendar },
   { href: "/inventory",        label: "Inventory",        icon: Boxes },
   { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
-  { href: "/hospitality",      label: "Hospitality",     icon: UtensilsCrossed },
+  { href: "/worship/songs",    label: "Song bank",        icon: Music },
+  { href: "/hospitality",      label: "Hospitality",      icon: UtensilsCrossed },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];

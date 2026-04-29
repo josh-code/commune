@@ -61,3 +61,12 @@ export async function requireHospitalityOrAdmin(): Promise<SessionUser> {
   if (!data) redirect("/dashboard");
   return user;
 }
+
+export async function requireWorshipWriteAccess(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role === "admin") return user;
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("is_worship_write_allowed");
+  if (!data) redirect("/dashboard");
+  return user;
+}

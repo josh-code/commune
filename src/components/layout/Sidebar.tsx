@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Boxes,
   Wrench,
+  Music,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -35,6 +36,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/schedule",         label: "Schedule",         icon: Calendar },
   { href: "/inventory",        label: "Inventory",        icon: Boxes },
   { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
+  { href: "/worship/songs", label: "Song bank", icon: Music },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];

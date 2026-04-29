@@ -646,6 +646,125 @@ export type Database = {
           },
         ]
       }
+      setlist_songs: {
+        Row: {
+          added_by: string
+          id: string
+          notes: string | null
+          played_key: string
+          position: number
+          setlist_id: string
+          song_version_id: string
+        }
+        Insert: {
+          added_by: string
+          id?: string
+          notes?: string | null
+          played_key: string
+          position: number
+          setlist_id: string
+          song_version_id: string
+        }
+        Update: {
+          added_by?: string
+          id?: string
+          notes?: string | null
+          played_key?: string
+          position?: number
+          setlist_id?: string
+          song_version_id?: string
+        }
+        Relationships: [
+          { foreignKeyName: "setlist_songs_added_by_fkey"; columns: ["added_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "setlist_songs_setlist_id_fkey"; columns: ["setlist_id"]; referencedRelation: "setlists"; referencedColumns: ["id"] },
+          { foreignKeyName: "setlist_songs_song_version_id_fkey"; columns: ["song_version_id"]; referencedRelation: "song_versions"; referencedColumns: ["id"] }
+        ]
+      }
+      setlists: {
+        Row: {
+          created_at: string
+          id: string
+          service_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          service_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          service_id?: string
+        }
+        Relationships: [
+          { foreignKeyName: "setlists_service_id_fkey"; columns: ["service_id"]; referencedRelation: "services"; referencedColumns: ["id"] }
+        ]
+      }
+      song_versions: {
+        Row: {
+          artist: string | null
+          chord_sheet_url: string | null
+          created_at: string
+          created_by: string
+          id: string
+          is_original: boolean
+          label: string
+          song_id: string
+          tempo: number | null
+          written_key: string
+        }
+        Insert: {
+          artist?: string | null
+          chord_sheet_url?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          is_original?: boolean
+          label: string
+          song_id: string
+          tempo?: number | null
+          written_key: string
+        }
+        Update: {
+          artist?: string | null
+          chord_sheet_url?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_original?: boolean
+          label?: string
+          song_id?: string
+          tempo?: number | null
+          written_key?: string
+        }
+        Relationships: [
+          { foreignKeyName: "song_versions_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "song_versions_song_id_fkey"; columns: ["song_id"]; referencedRelation: "songs"; referencedColumns: ["id"] }
+        ]
+      }
+      songs: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          { foreignKeyName: "songs_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

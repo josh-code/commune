@@ -1,6 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { ImageUpload } from "@/components/inventory/ImageUpload";
 import { deleteItemAction, updateItemAction } from "./actions";
 
 type Category = { id: string; name: string };
@@ -22,10 +23,16 @@ type Item = {
 
 export function EditItemForm({ item, categories }: { item: Item; categories: Category[] }) {
   const [isPending, startTransition] = useTransition();
+  const [photoUrl, setPhotoUrl] = useState<string | null>(item.photo_url);
 
   return (
     <>
       <form action={updateItemAction.bind(null, item.id)} className="bg-white rounded-xl border border-slate-200 p-6 space-y-4">
+        <input type="hidden" name="photo_url" value={photoUrl ?? ""} />
+        <input type="hidden" name="old_photo_url" value={item.photo_url ?? ""} />
+
+        <ImageUpload initialUrl={item.photo_url} onUpload={setPhotoUrl} />
+
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-600">Item name</label>
           <input type="text" name="name" required defaultValue={item.name} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20" />
@@ -75,11 +82,6 @@ export function EditItemForm({ item, categories }: { item: Item; categories: Cat
         <div className="space-y-1">
           <label className="text-xs font-medium text-slate-600">Location</label>
           <input type="text" name="location" defaultValue={item.location ?? ""} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20" />
-        </div>
-
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-slate-600">Photo URL</label>
-          <input type="url" name="photo_url" defaultValue={item.photo_url ?? ""} className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-indigo-500/20" />
         </div>
 
         <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-700">

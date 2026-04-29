@@ -121,3 +121,9 @@ export async function requireBriefEditAccess(serviceId: string): Promise<Session
   if (!speaker) redirect("/dashboard");
   return user;
 }
+
+export async function requireLibrarianOrAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role === "admin" || user.role === "librarian") return user;
+  redirect("/dashboard");
+}

@@ -14,6 +14,8 @@ import {
   UtensilsCrossed,
   Grid3x3,
   FileText,
+  Library,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -42,6 +44,8 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/schedule",         label: "Schedule",         icon: Calendar },
   { href: "/inventory",        label: "Inventory",        icon: Boxes },
   { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
+  { href: "/library",          label: "Library",          icon: Library },
+  { href: "/library/manage",   label: "Manage library",   icon: BookOpen, librarianOrAdmin: true, indent: true },
   { href: "/worship/songs",    label: "Song bank",        icon: Music },
   { href: "/hospitality",      label: "Hospitality",      icon: UtensilsCrossed },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },

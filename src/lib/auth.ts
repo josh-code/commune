@@ -6,7 +6,7 @@ export type SessionUser = {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "member" | "logistics";
+  role: "admin" | "member" | "logistics" | "librarian";
   status: "invited" | "active" | "on_leave" | "left";
 };
 
@@ -51,4 +51,10 @@ export async function requireLogisticsOrAdmin(): Promise<SessionUser> {
   const user = await requireUser();
   if (user.role !== "admin" && user.role !== "logistics") redirect("/dashboard");
   return user;
+}
+
+export async function requireLibrarianOrAdmin(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role === "admin" || user.role === "librarian") return user;
+  redirect("/dashboard");
 }

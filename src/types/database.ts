@@ -772,6 +772,10 @@ export type Database = {
     Functions: {
       is_admin: { Args: never; Returns: boolean }
       is_logistics_or_admin: { Args: never; Returns: boolean }
+      is_worship_write_allowed: { Args: Record<PropertyKey, never>; Returns: boolean }
+      is_setlist_viewer: { Args: { sid: string }; Returns: boolean }
+      is_service_worship_leader: { Args: { sid: string }; Returns: boolean }
+      get_worship_leader_service_ids: { Args: Record<PropertyKey, never>; Returns: string[] }
     }
     Enums: {
       inventory_condition: "good" | "needs_repair" | "out_of_service"

@@ -52,3 +52,30 @@ export async function requireLogisticsOrAdmin(): Promise<SessionUser> {
   if (user.role !== "admin" && user.role !== "logistics") redirect("/dashboard");
   return user;
 }
+
+export type RosterGridAccess = {
+  user: SessionUser;
+  canEditAll: boolean;
+  editableTeamIds: string[];
+};
+
+export async function requireRosterGridAccess(): Promise<RosterGridAccess> {
+  const user = await requireUser();
+  const supabase = await createClient();
+
+  if (user.role === "admin" || user.role === "roster_maker") {
+    return { user, canEditAll: true, editableTeamIds: [] };
+  }
+
+  const { data: leaderRows } = await supabase
+    .from("team_member_positions")
+    .select("team_id")
+    .eq("profile_id", user.id)
+    .eq("team_role", "leader");
+
+  const editableTeamIds = [...new Set((leaderRows ?? []).map((r) => r.team_id))];
+
+  if (editableTeamIds.length === 0) redirect("/dashboard");
+
+  return { user, canEditAll: false, editableTeamIds };
+}

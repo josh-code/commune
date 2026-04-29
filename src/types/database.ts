@@ -778,7 +778,15 @@ export type Database = {
     }
     Functions: {
       is_admin: { Args: never; Returns: boolean }
+      is_hospitality_or_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
       is_logistics_or_admin: { Args: never; Returns: boolean }
+      request_hospitality_order: {
+        Args: { p_service_id: string }
+        Returns: number
+      }
     }
     Enums: {
       hospitality_need_status: "needed" | "requested" | "fulfilled"

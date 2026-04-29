@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Boxes, Calendar, Settings, Wrench, Music, UtensilsCrossed } from "lucide-react";
+import { LayoutDashboard, Boxes, Calendar, Settings, Wrench, Music, UtensilsCrossed, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BottomTabsProps = {
@@ -18,6 +18,7 @@ export function BottomTabs({ role }: BottomTabsProps) {
     { href: "/schedule",      label: "Schedule",    icon: Calendar },
     { href: "/worship/songs", label: "Songs",       icon: Music },
     { href: "/hospitality",   label: "Hospitality", icon: UtensilsCrossed },
+    { href: "/brief",         label: "Brief",       icon: FileText },
     ...(role === "admin"
       ? [{ href: "/admin",            label: "Admin",  icon: Settings }]
       : role === "logistics"

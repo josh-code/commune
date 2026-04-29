@@ -13,6 +13,7 @@ import {
   Music,
   UtensilsCrossed,
   Grid3x3,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -45,6 +46,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/hospitality",      label: "Hospitality",      icon: UtensilsCrossed },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
   { href: "/roster/grid",      label: "Roster grid",      icon: Grid3x3, rosterGrid: true, indent: true },
+  { href: "/brief",            label: "Brief",            icon: FileText },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
 

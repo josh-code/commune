@@ -10,9 +10,12 @@ import {
   ClipboardList,
   Boxes,
   Wrench,
+  Music,
+  UtensilsCrossed,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
+import { NotificationBadge } from "@/components/notifications/NotificationBadge";
 
 type SidebarProps = {
   firstName: string;
@@ -35,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/schedule",         label: "Schedule",         icon: Calendar },
   { href: "/inventory",        label: "Inventory",        icon: Boxes },
   { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
+  { href: "/hospitality",      label: "Hospitality",     icon: UtensilsCrossed },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
@@ -91,6 +95,7 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
           </div>
           <div className="text-xs text-slate-500 capitalize">{role}</div>
         </div>
+        <NotificationBadge />
         <SignOutButton />
       </div>
     </aside>

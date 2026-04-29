@@ -34,6 +34,224 @@ export type Database = {
   }
   public: {
     Tables: {
+      library_book_copies: {
+        Row: {
+          book_id: string
+          condition: Database["public"]["Enums"]["library_condition"]
+          condition_notes: string | null
+          copy_number: number
+          created_at: string
+          id: string
+          location: string | null
+          status: Database["public"]["Enums"]["library_copy_status"]
+        }
+        Insert: {
+          book_id: string
+          condition?: Database["public"]["Enums"]["library_condition"]
+          condition_notes?: string | null
+          copy_number: number
+          created_at?: string
+          id?: string
+          location?: string | null
+          status?: Database["public"]["Enums"]["library_copy_status"]
+        }
+        Update: {
+          book_id?: string
+          condition?: Database["public"]["Enums"]["library_condition"]
+          condition_notes?: string | null
+          copy_number?: number
+          created_at?: string
+          id?: string
+          location?: string | null
+          status?: Database["public"]["Enums"]["library_copy_status"]
+        }
+        Relationships: [
+          { foreignKeyName: "library_book_copies_book_id_fkey"; columns: ["book_id"]; referencedRelation: "library_books"; referencedColumns: ["id"] }
+        ]
+      }
+      library_books: {
+        Row: {
+          author: string
+          category_id: string
+          cover_url: string | null
+          created_at: string
+          created_by: string
+          description: string | null
+          id: string
+          isbn: string | null
+          publisher: string | null
+          tags: string[]
+          title: string
+          year_published: number | null
+        }
+        Insert: {
+          author: string
+          category_id: string
+          cover_url?: string | null
+          created_at?: string
+          created_by: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          publisher?: string | null
+          tags?: string[]
+          title: string
+          year_published?: number | null
+        }
+        Update: {
+          author?: string
+          category_id?: string
+          cover_url?: string | null
+          created_at?: string
+          created_by?: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          publisher?: string | null
+          tags?: string[]
+          title?: string
+          year_published?: number | null
+        }
+        Relationships: [
+          { foreignKeyName: "library_books_category_id_fkey"; columns: ["category_id"]; referencedRelation: "library_categories"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_books_created_by_fkey"; columns: ["created_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      library_categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      library_loan_extensions: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          id: string
+          loan_id: string
+          reason: string | null
+          requested_by: string
+          requested_until: string
+          status: Database["public"]["Enums"]["library_extension_status"]
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          loan_id: string
+          reason?: string | null
+          requested_by: string
+          requested_until: string
+          status?: Database["public"]["Enums"]["library_extension_status"]
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          id?: string
+          loan_id?: string
+          reason?: string | null
+          requested_by?: string
+          requested_until?: string
+          status?: Database["public"]["Enums"]["library_extension_status"]
+        }
+        Relationships: [
+          { foreignKeyName: "library_loan_extensions_loan_id_fkey"; columns: ["loan_id"]; referencedRelation: "library_loans"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_loan_extensions_requested_by_fkey"; columns: ["requested_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_loan_extensions_decided_by_fkey"; columns: ["decided_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      library_loans: {
+        Row: {
+          borrower_id: string
+          checked_out_at: string
+          checked_out_by: string
+          copy_id: string
+          due_at: string
+          id: string
+          last_reminder_at: string | null
+          return_condition: Database["public"]["Enums"]["library_condition"] | null
+          return_notes: string | null
+          returned_at: string | null
+          returned_by: string | null
+        }
+        Insert: {
+          borrower_id: string
+          checked_out_at?: string
+          checked_out_by: string
+          copy_id: string
+          due_at: string
+          id?: string
+          last_reminder_at?: string | null
+          return_condition?: Database["public"]["Enums"]["library_condition"] | null
+          return_notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+        }
+        Update: {
+          borrower_id?: string
+          checked_out_at?: string
+          checked_out_by?: string
+          copy_id?: string
+          due_at?: string
+          id?: string
+          last_reminder_at?: string | null
+          return_condition?: Database["public"]["Enums"]["library_condition"] | null
+          return_notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+        }
+        Relationships: [
+          { foreignKeyName: "library_loans_borrower_id_fkey"; columns: ["borrower_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_loans_checked_out_by_fkey"; columns: ["checked_out_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_loans_copy_id_fkey"; columns: ["copy_id"]; referencedRelation: "library_book_copies"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_loans_returned_by_fkey"; columns: ["returned_by"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
+      library_reservations: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          notified_at: string | null
+          profile_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          profile_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          notified_at?: string | null
+          profile_id?: string
+        }
+        Relationships: [
+          { foreignKeyName: "library_reservations_book_id_fkey"; columns: ["book_id"]; referencedRelation: "library_books"; referencedColumns: ["id"] },
+          { foreignKeyName: "library_reservations_profile_id_fkey"; columns: ["profile_id"]; referencedRelation: "profiles"; referencedColumns: ["id"] }
+        ]
+      }
       inventory_categories: {
         Row: {
           color: string
@@ -651,12 +869,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decide_extension: {
+        Args: { p_extension_id: string; p_decision: Database["public"]["Enums"]["library_extension_status"]; p_reason: string | null }
+        Returns: undefined
+      }
       is_admin: { Args: never; Returns: boolean }
+      is_librarian_or_admin: {
+        Args: Record<string, never>
+        Returns: boolean
+      }
       is_logistics_or_admin: { Args: never; Returns: boolean }
+      notify_next_reservation: {
+        Args: { p_book_id: string }
+        Returns: undefined
+      }
+      request_extension: {
+        Args: { p_loan_id: string; p_requested_until: string; p_reason: string | null }
+        Returns: string
+      }
+      return_loan: {
+        Args: { p_loan_id: string; p_condition: Database["public"]["Enums"]["library_condition"] | null; p_notes: string | null }
+        Returns: undefined
+      }
+      self_checkout: {
+        Args: { p_book_id: string }
+        Returns: string
+      }
+      walk_up_checkout: {
+        Args: { p_borrower_id: string; p_copy_id: string; p_due_at: string }
+        Returns: string
+      }
     }
     Enums: {
       inventory_condition: "good" | "needs_repair" | "out_of_service"
-      profile_role: "admin" | "member" | "logistics"
+      library_condition: "good" | "damaged" | "poor"
+      library_copy_status: "available" | "checked_out" | "lost" | "retired"
+      library_extension_status: "pending" | "approved" | "rejected"
+      profile_role: "admin" | "member" | "logistics" | "librarian"
       profile_status: "invited" | "active" | "on_leave" | "left"
       reservation_status:
         | "pending"

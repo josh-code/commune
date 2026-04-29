@@ -52,3 +52,27 @@ export async function requireLogisticsOrAdmin(): Promise<SessionUser> {
   if (user.role !== "admin" && user.role !== "logistics") redirect("/dashboard");
   return user;
 }
+
+export async function requireBriefViewAccess(serviceId: string): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role === "admin") return user;
+
+  const supabase = await createClient();
+  const [{ data: media }, { data: speaker }] = await Promise.all([
+    supabase.rpc("is_media_or_admin"),
+    supabase.rpc("is_service_speaker", { sid: serviceId }),
+  ]);
+
+  if (!media && !speaker) redirect("/dashboard");
+  return user;
+}
+
+export async function requireBriefEditAccess(serviceId: string): Promise<SessionUser> {
+  const user = await requireUser();
+  if (user.role === "admin") return user;
+
+  const supabase = await createClient();
+  const { data: speaker } = await supabase.rpc("is_service_speaker", { sid: serviceId });
+  if (!speaker) redirect("/dashboard");
+  return user;
+}

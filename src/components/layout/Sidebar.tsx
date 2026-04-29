@@ -10,6 +10,7 @@ import {
   ClipboardList,
   Boxes,
   Wrench,
+  FileText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
@@ -36,6 +37,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/inventory",        label: "Inventory",        icon: Boxes },
   { href: "/inventory/manage", label: "Manage inventory", icon: Wrench, staffOnly: true, indent: true },
   { href: "/roster",           label: "Roster",           icon: ClipboardList, adminOnly: true },
+  { href: "/brief",            label: "Brief",            icon: FileText },
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
 

@@ -6,7 +6,7 @@ import { LayoutDashboard, Boxes, Calendar, Settings, Wrench } from "lucide-react
 import { cn } from "@/lib/utils";
 
 type BottomTabsProps = {
-  role: "admin" | "member" | "logistics";
+  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
 };
 
 export function BottomTabs({ role }: BottomTabsProps) {

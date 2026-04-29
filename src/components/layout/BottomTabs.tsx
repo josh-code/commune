@@ -2,24 +2,30 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Boxes, Calendar, Settings, Wrench } from "lucide-react";
+import { LayoutDashboard, Boxes, Calendar, Settings, Wrench, Music, UtensilsCrossed, FileText, Library, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type BottomTabsProps = {
-  role: "admin" | "member" | "logistics";
+  role: "admin" | "member" | "logistics" | "librarian";
 };
 
 export function BottomTabs({ role }: BottomTabsProps) {
   const pathname = usePathname();
 
   const tabs = [
-    { href: "/dashboard", label: "Home",      icon: LayoutDashboard },
-    { href: "/inventory", label: "Inventory", icon: Boxes },
-    { href: "/schedule",  label: "Schedule",  icon: Calendar },
+    { href: "/dashboard",     label: "Home",        icon: LayoutDashboard },
+    { href: "/library",       label: "Library",     icon: Library },
+    { href: "/inventory",     label: "Inventory",   icon: Boxes },
+    { href: "/schedule",      label: "Schedule",    icon: Calendar },
+    { href: "/worship/songs", label: "Songs",       icon: Music },
+    { href: "/hospitality",   label: "Hospitality", icon: UtensilsCrossed },
+    { href: "/brief",         label: "Brief",       icon: FileText },
     ...(role === "admin"
-      ? [{ href: "/admin", label: "Admin", icon: Settings }]
+      ? [{ href: "/admin",            label: "Admin",   icon: Settings }]
       : role === "logistics"
-      ? [{ href: "/inventory/manage", label: "Manage", icon: Wrench }]
+      ? [{ href: "/inventory/manage", label: "Manage",  icon: Wrench }]
+      : role === "librarian"
+      ? [{ href: "/library/manage",   label: "Manage",  icon: BookOpen }]
       : []),
   ];
 

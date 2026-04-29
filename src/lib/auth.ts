@@ -6,7 +6,7 @@ export type SessionUser = {
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "member" | "logistics";
+  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
   status: "invited" | "active" | "on_leave" | "left";
 };
 

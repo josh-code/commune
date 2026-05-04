@@ -68,6 +68,18 @@ export default async function RosterGridPage({
     };
   }
 
+  // Pre-populate sentinel entries for every (service × position) pair that has no DB slot.
+  // This allows the grid to create new slots on assignment without requiring the roster
+  // builder to be used first.
+  for (const service of serviceList) {
+    for (const position of (positions ?? [])) {
+      const k = cellKey(service.id, position.id);
+      if (!slots[k]) {
+        slots[k] = { slot_id: "", profile_id: null, status: "unassigned" };
+      }
+    }
+  }
+
   const eligibility: GridData["eligibility"] = {};
   for (const row of tmp ?? []) {
     const arr = eligibility[row.position_id] ?? [];

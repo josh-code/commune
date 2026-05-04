@@ -99,7 +99,7 @@ export function ServicesAsRows({
                   const k = cellKey(s.id, p.id);
                   const slot = optSlots[k];
                   const profile = slot?.profile_id ? profilesById.get(slot.profile_id) : null;
-                  const editable = editMode && canEditTeam(t.id) && !!slot;
+                  const editable = editMode && canEditTeam(t.id);
                   const isOpen = openCellKey === k;
                   return (
                     <td
@@ -112,9 +112,12 @@ export function ServicesAsRows({
                       <span className="text-xs text-slate-700">
                         {profile ? `${profile.first_name} ${profile.last_name.charAt(0)}.` : "—"}
                       </span>
-                      {isOpen && slot && (
+                      {isOpen && (
                         <CellPopover
-                          slotId={slot.slot_id}
+                          slotId={slot?.slot_id ?? ""}
+                          serviceId={s.id}
+                          teamId={t.id}
+                          positionId={p.id}
                           positionName={p.name}
                           serviceName={s.name}
                           serviceDate={s.date}
@@ -125,7 +128,7 @@ export function ServicesAsRows({
                           }
                           unavailableIds={new Set(data.unavailableByService[s.id] ?? [])}
                           alreadyServingIds={alreadyServingIds(s.id, k)}
-                          currentProfileId={slot.profile_id}
+                          currentProfileId={slot?.profile_id ?? null}
                           onClose={() => setOpenCellKey(null)}
                           onLocalChange={(pid) => applySlotChange({ key: k, profile_id: pid })}
                         />

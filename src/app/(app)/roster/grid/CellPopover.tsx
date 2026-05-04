@@ -8,6 +8,9 @@ type Profile = { id: string; first_name: string; last_name: string };
 
 type Props = {
   slotId: string;
+  serviceId: string;
+  teamId: string;
+  positionId: string;
   positionName: string;
   serviceName: string;
   serviceDate: string;
@@ -20,7 +23,8 @@ type Props = {
 };
 
 export function CellPopover({
-  slotId, positionName, serviceName, serviceDate, eligible,
+  slotId, serviceId, teamId, positionId,
+  positionName, serviceName, serviceDate, eligible,
   unavailableIds, alreadyServingIds, currentProfileId,
   onClose, onLocalChange,
 }: Props) {
@@ -43,7 +47,8 @@ export function CellPopover({
     }
     onLocalChange(profileId);
     startTransition(async () => {
-      const res = await assignSlotAction(slotId, profileId);
+      const createParams = !slotId ? { service_id: serviceId, team_id: teamId, position_id: positionId } : undefined;
+      const res = await assignSlotAction(slotId, profileId, createParams);
       if (res?.error) {
         setError(res.error);
         // Revert by re-passing the previous value via parent — for simplicity we

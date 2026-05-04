@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useOptimistic, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Pencil, Eye } from "lucide-react";
 import { ServicesAsRows } from "./ServicesAsRows";
@@ -39,6 +39,15 @@ export function RosterGrid({ data, range, canEditAll, editableTeamIds }: Props) 
   const [start, setStart] = useState(range.start);
   const [end, setEnd] = useState(range.end);
 
+  const [optSlots, applySlotChange] = useOptimistic(
+    data.slots,
+    (current: GridData["slots"], op: { key: string; profile_id: string | null }) => {
+      const existing = current[op.key];
+      if (!existing) return current;
+      return { ...current, [op.key]: { ...existing, profile_id: op.profile_id } };
+    },
+  );
+
   // Read orientation from localStorage on mount
   useEffect(() => {
     const stored = localStorage.getItem(ORIENTATION_KEY);
@@ -71,7 +80,7 @@ export function RosterGrid({ data, range, canEditAll, editableTeamIds }: Props) 
   const canShowEditToggle = canEditAll || editableTeamIds.length > 0;
 
   return (
-    <div className="space-y-4">
+    <div className="full-bleed-page p-6">
       {/* ── Mobile guard ─────────────────────────────────── */}
       <div className="md:hidden text-center py-12 text-slate-400">
         <p className="text-sm">Open on a larger screen to use the roster grid.</p>
@@ -161,12 +170,19 @@ export function RosterGrid({ data, range, canEditAll, editableTeamIds }: Props) 
             editMode={editMode}
             canEditAll={canEditAll}
             editableTeamIds={editableTeamIds}
+            optSlots={optSlots}
+            applySlotChange={applySlotChange}
           />
         ) : (
           <PeopleAsRows
             data={data}
             visibleTeams={visibleTeams}
             visiblePositions={visiblePositions}
+            editMode={editMode}
+            canEditAll={canEditAll}
+            editableTeamIds={editableTeamIds}
+            optSlots={optSlots}
+            applySlotChange={applySlotChange}
           />
         )}
       </div>

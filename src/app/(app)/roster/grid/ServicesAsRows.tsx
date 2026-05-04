@@ -1,9 +1,11 @@
 "use client";
 
-import { useOptimistic, useState } from "react";
+import { useState } from "react";
 import { CellPopover } from "./CellPopover";
 import { cellKey } from "@/lib/roster-grid";
 import type { GridData } from "./RosterGrid";
+
+type SlotChange = { key: string; profile_id: string | null };
 
 type Props = {
   data: GridData;
@@ -12,26 +14,15 @@ type Props = {
   editMode: boolean;
   canEditAll: boolean;
   editableTeamIds: string[];
+  optSlots: GridData["slots"];
+  applySlotChange: (op: SlotChange) => void;
 };
-
-type SlotChange = { key: string; profile_id: string | null };
 
 export function ServicesAsRows({
   data, visibleTeams, visiblePositions, editMode, canEditAll, editableTeamIds,
+  optSlots, applySlotChange,
 }: Props) {
   const [openCellKey, setOpenCellKey] = useState<string | null>(null);
-
-  const [optSlots, applySlotChange] = useOptimistic(
-    data.slots,
-    (current: GridData["slots"], op: SlotChange) => {
-      const existing = current[op.key];
-      if (!existing) return current;
-      return {
-        ...current,
-        [op.key]: { ...existing, profile_id: op.profile_id },
-      };
-    },
-  );
 
   const profilesById = new Map(data.profiles.map((p) => [p.id, p]));
 

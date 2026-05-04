@@ -17,7 +17,7 @@ export function AppShell({ user, children }: AppShellProps) {
       />
       {/* md:pl-60 clears the 240px sidebar; pb-16 clears the mobile bottom nav */}
       <main className="md:pl-60 pb-16 md:pb-0">
-        <div className="p-6 max-w-5xl mx-auto">{children}</div>
+        <div className="p-6 max-w-5xl mx-auto [&:has(.full-bleed-page)]:max-w-none [&:has(.full-bleed-page)]:p-0">{children}</div>
       </main>
       <BottomTabs role={user.role} />
     </div>

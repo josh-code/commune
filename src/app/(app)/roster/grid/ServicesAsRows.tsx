@@ -18,6 +18,12 @@ type Props = {
   applySlotChange: (op: SlotChange) => void;
 };
 
+const STATUS_BADGE: Record<string, string> = {
+  pending:   "bg-amber-100 text-amber-700",
+  confirmed: "bg-green-100 text-green-700",
+  declined:  "bg-red-100 text-red-700",
+};
+
 export function ServicesAsRows({
   data, visibleTeams, visiblePositions, editMode, canEditAll, editableTeamIds,
   optSlots, applySlotChange,
@@ -109,9 +115,20 @@ export function ServicesAsRows({
                       }`}
                       onClick={() => editable && setOpenCellKey(isOpen ? null : k)}
                     >
-                      <span className="text-xs text-slate-700">
-                        {profile ? `${profile.first_name} ${profile.last_name.charAt(0)}.` : "—"}
-                      </span>
+                      {profile ? (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <span className="text-xs text-slate-700">
+                            {profile.first_name} {profile.last_name.charAt(0)}.
+                          </span>
+                          {slot && slot.status !== "unassigned" && (
+                            <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_BADGE[slot.status] ?? ""}`}>
+                              {slot.status}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-slate-300 text-xs">—</span>
+                      )}
                       {isOpen && (
                         <CellPopover
                           slotId={slot?.slot_id ?? ""}

@@ -119,14 +119,14 @@ export function PeopleAsRows({
     [visiblePositions],
   );
 
-  function getAssignedPositionNames(profileId: string, serviceId: string): string[] {
-    const names: string[] = [];
+  function getAssignedPositions(profileId: string, serviceId: string): Array<{ name: string; status: string }> {
+    const result: Array<{ name: string; status: string }> = [];
     for (const pos of visiblePositions) {
       const k = cellKey(serviceId, pos.id);
       const slot = optSlots[k];
-      if (slot?.profile_id === profileId) names.push(pos.name);
+      if (slot?.profile_id === profileId) result.push({ name: pos.name, status: slot.status });
     }
-    return names;
+    return result;
   }
 
   // Check if any visible team has eligible members
@@ -199,12 +199,18 @@ export function PeopleAsRows({
                       </div>
                     </td>
                     {data.services.map((service) => {
-                      const names = getAssignedPositionNames(person.id, service.id);
+                      const assignments = getAssignedPositions(person.id, service.id);
                       const popoverKey = `${team.id}:${person.id}:${service.id}`;
                       const isOpen = openCellKey === popoverKey;
                       const isUnavailable = (
                         data.unavailableByService[service.id] ?? []
                       ).includes(person.id);
+
+                      const STATUS_CHIP: Record<string, string> = {
+                        pending:   "bg-amber-100 text-amber-700",
+                        confirmed: "bg-green-100 text-green-700",
+                        declined:  "bg-red-100 text-red-700",
+                      };
 
                       return (
                         <td
@@ -217,10 +223,21 @@ export function PeopleAsRows({
                             setOpenCellKey(isOpen ? null : popoverKey);
                           }}
                         >
-                          {names.length === 0 ? (
+                          {assignments.length === 0 ? (
                             <span className="text-slate-300">—</span>
                           ) : (
-                            <span className="text-xs">{names.join(", ")}</span>
+                            <div className="flex flex-col items-center gap-0.5">
+                              {assignments.map((a) => (
+                                <span key={a.name} className="flex flex-col items-center gap-0.5">
+                                  <span className="text-xs text-slate-700 leading-tight">{a.name}</span>
+                                  {a.status !== "unassigned" && (
+                                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded-full ${STATUS_CHIP[a.status] ?? ""}`}>
+                                      {a.status}
+                                    </span>
+                                  )}
+                                </span>
+                              ))}
+                            </div>
                           )}
 
                           {isOpen && editable && (

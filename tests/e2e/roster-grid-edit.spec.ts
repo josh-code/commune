@@ -38,7 +38,7 @@ test.describe("Roster Grid – edit mode", () => {
 
     // Confirm we see the service (not the "no services" empty state)
     await expect(page.getByText("No services in this date range")).not.toBeVisible();
-    await expect(page.getByText("Grid Edit E2E Test")).toBeVisible();
+    await expect(page.getByText("Grid Edit E2E Test").first()).toBeVisible();
 
     // ── Before edit mode ──────────────────────────────────────────────────────
     const toggleBtn = page.getByRole("button", { name: "View only" });

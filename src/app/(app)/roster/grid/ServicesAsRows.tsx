@@ -18,8 +18,14 @@ type Props = {
   applySlotChange: (op: SlotChange) => void;
 };
 
+const STATUS_CELL_BG: Record<string, string> = {
+  pending:   "bg-yellow-50",
+  confirmed: "bg-green-50",
+  declined:  "bg-red-50",
+};
+
 const STATUS_BADGE: Record<string, string> = {
-  pending:   "bg-amber-100 text-amber-700",
+  pending:   "bg-yellow-100 text-yellow-700",
   confirmed: "bg-green-100 text-green-700",
   declined:  "bg-red-100 text-red-700",
 };
@@ -111,8 +117,8 @@ export function ServicesAsRows({
                     <td
                       key={p.id}
                       className={`relative border-b border-l border-slate-200 px-2 py-2 text-center ${
-                        editable ? "cursor-pointer hover:bg-indigo-50" : ""
-                      }`}
+                        profile && slot ? (STATUS_CELL_BG[slot.status] ?? "") : ""
+                      } ${editable ? "cursor-pointer hover:bg-indigo-50" : ""}`}
                       onClick={() => editable && setOpenCellKey(isOpen ? null : k)}
                     >
                       {profile ? (

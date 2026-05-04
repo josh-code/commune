@@ -206,18 +206,26 @@ export function PeopleAsRows({
                         data.unavailableByService[service.id] ?? []
                       ).includes(person.id);
 
+                      const STATUS_CELL_BG: Record<string, string> = {
+                        pending:   "bg-yellow-50",
+                        confirmed: "bg-green-50",
+                        declined:  "bg-red-50",
+                      };
                       const STATUS_CHIP: Record<string, string> = {
-                        pending:   "bg-amber-100 text-amber-700",
+                        pending:   "bg-yellow-100 text-yellow-700",
                         confirmed: "bg-green-100 text-green-700",
                         declined:  "bg-red-100 text-red-700",
                       };
+
+                      // Use the dominant status for the cell background
+                      const dominantStatus = assignments.find((a) => a.status !== "unassigned")?.status ?? "";
 
                       return (
                         <td
                           key={service.id}
                           className={`relative border-b border-l border-slate-200 px-2 py-2 text-center text-slate-700 ${
-                            editable ? "cursor-pointer hover:bg-indigo-50" : ""
-                          }`}
+                            assignments.length > 0 ? (STATUS_CELL_BG[dominantStatus] ?? "") : ""
+                          } ${editable ? "cursor-pointer hover:bg-indigo-50" : ""}`}
                           onClick={() => {
                             if (!editable) return;
                             setOpenCellKey(isOpen ? null : popoverKey);

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { FileText, Plus } from "lucide-react";
+import { DeleteVersionButton } from "./DeleteVersionButton";
 
 export default async function SongDetailPage({
   params,
@@ -64,17 +65,26 @@ export default async function SongDetailPage({
                     {v.tempo && <span>{v.tempo} BPM</span>}
                   </div>
                 </div>
-                {v.chord_sheet_url && (
-                  <a
-                    href={v.chord_sheet_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800 flex-shrink-0"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    Chord sheet
-                  </a>
-                )}
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {v.chord_sheet_url && (
+                    <a
+                      href={v.chord_sheet_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 text-xs text-indigo-600 hover:text-indigo-800"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      Chord sheet
+                    </a>
+                  )}
+                  {canWrite && (
+                    <DeleteVersionButton
+                      versionId={v.id}
+                      songId={id}
+                      versionLabel={v.label}
+                    />
+                  )}
+                </div>
               </div>
             </li>
           ))}

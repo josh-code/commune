@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { requireWorshipWriteAccess } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { storagePathFromChordSheetUrl } from "@/lib/worship";
@@ -41,6 +42,37 @@ export async function createVersionAction(songId: string, formData: FormData): P
   });
 
   redirect(`/worship/songs/${songId}`);
+}
+
+export async function deleteVersionAction(
+  versionId: string,
+  songId: string,
+): Promise<{ error?: string }> {
+  await requireWorshipWriteAccess();
+  const supabase = await createClient();
+
+  const { data: version } = await supabase
+    .from("song_versions")
+    .select("chord_sheet_url")
+    .eq("id", versionId)
+    .single();
+
+  const { error } = await supabase
+    .from("song_versions")
+    .delete()
+    .eq("id", versionId);
+
+  if (error) return { error: error.message };
+
+  if (version?.chord_sheet_url) {
+    try {
+      const path = storagePathFromChordSheetUrl(version.chord_sheet_url);
+      await supabase.storage.from("chord-sheets").remove([path]);
+    } catch {}
+  }
+
+  revalidatePath(`/worship/songs/${songId}`);
+  return {};
 }
 
 export async function deleteChordSheetAction(url: string): Promise<void> {

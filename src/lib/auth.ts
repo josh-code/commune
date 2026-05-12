@@ -1,36 +1,49 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Role, TeamSlug } from "@/lib/nav";
 
 export type SessionUser = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
+  roles: Role[];
+  teams: TeamSlug[];
   status: "invited" | "active" | "on_leave" | "left";
 };
 
+export const has = (u: SessionUser, ...roles: Role[]): boolean =>
+  roles.some(r => u.roles.includes(r));
+
 export async function getSessionUser(): Promise<SessionUser | null> {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("first_name, last_name, email, role, status")
+    .select("first_name, last_name, email, roles, status")
     .eq("id", user.id)
     .single();
-
   if (!profile) return null;
+
+  const { data: teamRows } = await supabase
+    .from("team_member_positions")
+    .select("teams!inner(name)")
+    .eq("profile_id", user.id);
+
+  const teams = [...new Set(
+    (teamRows ?? [])
+      .map(r => (r.teams as unknown as { name: string }).name.toLowerCase())
+  )] as TeamSlug[];
 
   return {
     id: user.id,
     email: profile.email,
     firstName: profile.first_name,
     lastName: profile.last_name,
-    role: profile.role,
+    roles: profile.roles as Role[],
+    teams,
     status: profile.status,
   };
 }

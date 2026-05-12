@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { StatusForm, RoleForm, AddToTeamForm, EditProfileForm, RemoveMemberForm } from "./ProfileForms";
@@ -39,7 +39,7 @@ export default async function ProfilePage({
   ]);
 
   // Members can only see their own profile
-  if (viewer.role !== "admin" && id !== viewer.id) {
+  if (!has(viewer, "admin") && id !== viewer.id) {
     redirect(`/people/${viewer.id}`);
   }
 
@@ -77,7 +77,7 @@ export default async function ProfilePage({
   };
   const positionRows: MemberPos[] = (memberPositions ?? []) as MemberPos[];
 
-  const isAdmin = viewer.role === "admin";
+  const isAdmin = has(viewer, "admin");
   const isOwnProfile = viewer.id === id;
   const canEdit = isAdmin || isOwnProfile;
 

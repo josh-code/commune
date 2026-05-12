@@ -21,19 +21,20 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { SessionUser } from "@/lib/auth";
 
 type BottomTabsProps = {
-  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
+  user: SessionUser;
 };
 
-export function BottomTabs({ role }: BottomTabsProps) {
+export function BottomTabs({ user }: BottomTabsProps) {
   const pathname = usePathname();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const isAdmin = role === "admin";
-  const isLogistics = role === "logistics";
-  const isLibrarian = role === "librarian";
-  const isRosterMaker = role === "roster_maker";
+  const isAdmin = user.roles.includes("admin");
+  const isLogistics = user.roles.includes("logistics");
+  const isLibrarian = user.roles.includes("librarian");
+  const isRosterMaker = user.roles.includes("roster_maker");
 
   const allNavItems = [
     { href: "/dashboard",         label: "Home",          icon: LayoutDashboard, show: true },

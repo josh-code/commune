@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireBriefViewAccess } from "@/lib/auth";
+import { requireBriefViewAccess, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { defaultDeadlineFor } from "@/lib/brief";
 import { BriefEditor } from "./BriefEditor";
@@ -56,7 +56,7 @@ export default async function BriefPage({
     supabase.rpc("is_service_speaker", { sid: service_id }),
   ]);
 
-  const isAdmin = user.role === "admin";
+  const isAdmin = has(user, "admin");
   const canEdit = isAdmin || (speaker ?? false);
 
   const dateStr = new Date(service.date + "T00:00:00").toLocaleDateString("en-US", {

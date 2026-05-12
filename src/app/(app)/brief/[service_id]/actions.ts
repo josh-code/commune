@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireUser, requireBriefEditAccess } from "@/lib/auth";
+import { requireUser, requireBriefEditAccess, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { storagePathFromBriefAttachmentUrl } from "@/lib/brief";
 
@@ -165,7 +165,7 @@ export async function updateDeadlineAction(
   isoTimestamp: string,
 ): Promise<void> {
   const user = await requireUser();
-  if (user.role !== "admin") return;
+  if (!has(user, "admin")) return;
 
   const supabase = await createClient();
   const serviceId = await loadServiceForBrief(supabase, briefId);

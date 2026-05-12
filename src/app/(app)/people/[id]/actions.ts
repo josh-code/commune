@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 // ─── Update own contact fields (or full update for admin) ───────────────────
@@ -30,7 +30,7 @@ export async function updateProfileAction(
   formData: FormData,
 ): Promise<UpdateProfileState> {
   const viewer = await requireUser();
-  const isAdmin = viewer.role === "admin";
+  const isAdmin = has(viewer, "admin");
   const isOwn = viewer.id === profileId;
 
   if (!isAdmin && !isOwn) {
@@ -95,7 +95,7 @@ export async function updateStatusAction(
   formData: FormData,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   const status = formData.get("status") as string;
   if (!statusValues.includes(status as (typeof statusValues)[number])) return;
 
@@ -115,7 +115,7 @@ export async function updateRoleAction(
   formData: FormData,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   if (profileId === u.id) throw new Error("Cannot change your own role.");
   const role = formData.get("role") as string;
   if (!roleValues.includes(role as (typeof roleValues)[number])) return;
@@ -134,7 +134,7 @@ export async function addTeamPositionAction(
   formData: FormData,
 ): Promise<{ error?: string }> {
   const u = await requireUser();
-  if (u.role !== "admin") return { error: "Not authorised." };
+  if (!has(u, "admin")) return { error: "Not authorised." };
   const teamId     = formData.get("teamId")     as string;
   const positionId = formData.get("positionId") as string;
   const teamRole   = (formData.get("teamRole")  as string) ?? "member";
@@ -159,7 +159,7 @@ export async function removeTeamPositionAction(
   positionId: string,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   const supabase = await createClient();
   await supabase
     .from("team_member_positions")
@@ -173,7 +173,7 @@ export async function removeTeamPositionAction(
 
 export async function removeMemberAction(profileId: string): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   if (profileId === u.id) throw new Error("Cannot remove yourself.");
 
   const supabase = await createClient();

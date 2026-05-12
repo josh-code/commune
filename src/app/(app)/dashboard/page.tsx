@@ -1,7 +1,7 @@
 // src/app/(app)/dashboard/page.tsx
 import Link from "next/link";
 import { Boxes, Bell } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { confirmAction, declineAction } from "../schedule/actions";
@@ -51,7 +51,7 @@ export default async function DashboardPage() {
     .order("start_date");
 
   // Staff alerts
-  const isStaff = user.role === "admin" || user.role === "logistics";
+  const isStaff = has(user, "admin", "logistics");
   let pendingApprovalCount = 0;
   let overdueCount = 0;
   if (isStaff) {
@@ -68,7 +68,7 @@ export default async function DashboardPage() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Welcome, {user.firstName}</h1>
-        <p className="text-sm text-slate-500 mt-1 capitalize">{user.role}</p>
+        <p className="text-sm text-slate-500 mt-1 capitalize">{user.roles.join(", ")}</p>
       </div>
 
       {/* Inventory: my reservations */}

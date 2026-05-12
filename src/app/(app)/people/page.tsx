@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { PeopleList, type MemberRow } from "./PeopleList";
 
@@ -8,7 +8,7 @@ export default async function PeoplePage() {
   const user = await requireUser();
 
   // Members see only their own profile
-  if (user.role !== "admin") {
+  if (!has(user, "admin")) {
     redirect(`/people/${user.id}`);
   }
 

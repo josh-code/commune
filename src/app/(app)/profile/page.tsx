@@ -17,7 +17,7 @@ export default async function ProfilePage() {
           <span className="text-muted-foreground">Email:</span> {user.email}
         </div>
         <div>
-          <span className="text-muted-foreground">Role:</span> {user.role}
+          <span className="text-muted-foreground">Role:</span> {user.roles.join(", ")}
         </div>
         <div>
           <span className="text-muted-foreground">Status:</span> {user.status}

@@ -20,11 +20,10 @@ import {
 import { cn } from "@/lib/utils";
 import { SignOutButton } from "@/components/sign-out-button";
 import { NotificationBadge } from "@/components/notifications/NotificationBadge";
+import type { SessionUser } from "@/lib/auth";
 
 type SidebarProps = {
-  firstName: string;
-  lastName: string;
-  role: "admin" | "member" | "logistics" | "librarian" | "roster_maker";
+  user: SessionUser;
 };
 
 type NavItem = {
@@ -54,10 +53,14 @@ const NAV_ITEMS: NavItem[] = [
   { href: "/admin",            label: "Admin",            icon: Settings, adminOnly: true },
 ];
 
-export function Sidebar({ firstName, lastName, role }: SidebarProps) {
+export function Sidebar({ user }: SidebarProps) {
+  const { firstName, lastName } = user;
   const pathname = usePathname();
   const initials = `${firstName[0]}${lastName[0]}`.toUpperCase();
-  const isStaff = role === "admin" || role === "logistics";
+  const isAdmin = user.roles.includes("admin");
+  const isStaff = isAdmin || user.roles.includes("logistics");
+  const isLibrarian = user.roles.includes("librarian");
+  const isRosterMaker = user.roles.includes("roster_maker");
 
   return (
     <aside className="hidden md:flex flex-col fixed left-0 top-0 h-full w-60 bg-white border-r border-slate-200 z-20">
@@ -72,10 +75,10 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
       {/* Nav */}
       <nav className="flex-1 py-3 px-2 space-y-0.5">
         {NAV_ITEMS.map(({ href, label, icon: Icon, adminOnly, staffOnly, librarianOrAdmin, rosterGrid, indent }) => {
-          if (adminOnly && role !== "admin") return null;
+          if (adminOnly && !isAdmin) return null;
           if (staffOnly && !isStaff) return null;
-          if (librarianOrAdmin && role !== "admin" && role !== "librarian") return null;
-          if (rosterGrid && role !== "admin" && role !== "roster_maker") return null;
+          if (librarianOrAdmin && !isAdmin && !isLibrarian) return null;
+          if (rosterGrid && !isAdmin && !isRosterMaker) return null;
           const active =
             pathname === href || pathname.startsWith(href + "/");
           return (
@@ -106,7 +109,7 @@ export function Sidebar({ firstName, lastName, role }: SidebarProps) {
           <div className="text-xs font-medium text-slate-900 truncate">
             {firstName} {lastName}
           </div>
-          <div className="text-xs text-slate-500 capitalize">{role}</div>
+          <div className="text-xs text-slate-500 capitalize">{user.roles.join(", ")}</div>
         </div>
         <NotificationBadge />
         <SignOutButton />

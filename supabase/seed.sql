@@ -20,12 +20,12 @@ insert into auth.users (
   false, '', '', '', ''
 );
 
-insert into profiles (id, first_name, last_name, email, role, status)
+insert into profiles (id, first_name, last_name, email, roles, status)
 values (
   '11111111-1111-1111-1111-111111111111',
   'Dev',
   'Admin',
   'admin@commune.local',
-  'admin',
+  ARRAY['admin', 'member']::profile_role[],
   'active'
 );

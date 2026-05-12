@@ -49,12 +49,12 @@
 
 **Files:**
 - Create: `src/lib/nav.ts`
-- Create: `src/lib/nav.test.ts`
+- Create: `tests/unit/lib/nav.test.ts` (vitest config includes only `tests/unit/**/*.test.ts`)
 
 - [ ] **Step 1: Write failing tests**
 
 ```ts
-// src/lib/nav.test.ts
+// tests/unit/lib/nav.test.ts
 import { describe, it, expect } from "vitest";
 import { matchesGate, visibleNavItems, bottomBarItems, NAV_ITEMS, type NavUser, type Role, type TeamSlug } from "./nav";
 

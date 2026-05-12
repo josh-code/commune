@@ -16,7 +16,7 @@ export default async function PeoplePage() {
 
   const { data: members, error } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, email, role, status, team_member_positions(team_id, teams(id, name, color))")
+    .select("id, first_name, last_name, email, roles, status, team_member_positions(team_id, teams(id, name, color))")
     .neq("status", "left")
     .order("first_name");
 
@@ -32,7 +32,7 @@ export default async function PeoplePage() {
     first_name: m.first_name,
     last_name: m.last_name,
     email: m.email,
-    role: m.role as MemberRow["role"],
+    roles: m.roles as MemberRow["roles"],
     status: m.status as MemberRow["status"],
     teams: (m.team_member_positions ?? [])
       .map((mt: { teams: { id: string; name: string; color: string } | null }) => mt.teams)

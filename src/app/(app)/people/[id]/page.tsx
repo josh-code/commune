@@ -47,7 +47,7 @@ export default async function ProfilePage({
 
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("id, first_name, last_name, email, role, status, phone, address, bio, created_at")
+    .select("id, first_name, last_name, email, roles, status, phone, address, bio, created_at")
     .eq("id", id)
     .single();
 
@@ -110,7 +110,7 @@ export default async function ProfilePage({
             </h1>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
               <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-slate-100 text-slate-600 capitalize">
-                {profile.role}
+                {profile.roles?.join(", ") ?? ""}
               </span>
               <span
                 className={cn(
@@ -184,7 +184,7 @@ export default async function ProfilePage({
                 Admin actions
               </p>
               <StatusForm profileId={id} currentStatus={profile.status} />
-              <RoleForm profileId={id} currentRole={profile.role} />
+              <RoleForm profileId={id} currentRole={(profile.roles?.[0] ?? "member")} />
               <RemoveMemberForm profileId={id} />
             </div>
           )}

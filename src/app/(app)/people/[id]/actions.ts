@@ -121,7 +121,7 @@ export async function updateRoleAction(
   if (!roleValues.includes(role as (typeof roleValues)[number])) return;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ role: role as (typeof roleValues)[number] }).eq("id", profileId);
+  const { error } = await supabase.from("profiles").update({ roles: [role as (typeof roleValues)[number]] }).eq("id", profileId);
   if (error) throw new Error(error.message);
   revalidatePath(`/people/${profileId}`);
   revalidatePath("/people");

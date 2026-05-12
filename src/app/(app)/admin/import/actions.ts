@@ -96,7 +96,7 @@ export async function bulkImportAction(formData: FormData): Promise<ImportResult
       last_name:         lastName,
       email:             row.email,
       phone:             row.phone || null,
-      role:              "member",
+      roles:             ["member"],
       status:            "invited",
       invite_token:      token,
       invite_expires_at: expiresAt.toISOString(),

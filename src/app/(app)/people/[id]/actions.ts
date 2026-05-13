@@ -106,25 +106,31 @@ export async function updateStatusAction(
   revalidatePath("/people");
 }
 
-// ─── Admin: update role ──────────────────────────────────────────────────────
+// ─── Admin: update roles ─────────────────────────────────────────────────────
 
-const roleValues = ["member", "logistics", "admin"] as const;
+import type { Role } from "@/lib/nav";
 
-export async function updateRoleAction(
+const ALL_ROLES: Role[] = ["admin", "member", "logistics", "librarian", "roster_maker"];
+
+export async function updateRolesAction(
   profileId: string,
   formData: FormData,
 ): Promise<void> {
   const u = await requireUser();
-  if (!has(u, "admin")) throw new Error("Not authorised.");
-  if (profileId === u.id) throw new Error("Cannot change your own role.");
-  const role = formData.get("role") as string;
-  if (!roleValues.includes(role as (typeof roleValues)[number])) return;
+  if (!u.roles.includes("admin")) throw new Error("Not authorised.");
+
+  const submitted = formData.getAll("roles") as string[];
+  const roles = submitted.filter((r): r is Role => ALL_ROLES.includes(r as Role));
+  // Always include 'member' as the baseline so a profile is never role-less.
+  if (!roles.includes("member")) roles.push("member");
 
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ roles: [role as (typeof roleValues)[number]] }).eq("id", profileId);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ roles })
+    .eq("id", profileId);
   if (error) throw new Error(error.message);
   revalidatePath(`/people/${profileId}`);
-  revalidatePath("/people");
 }
 
 // ─── Admin: add team + position membership ───────────────────────────────────

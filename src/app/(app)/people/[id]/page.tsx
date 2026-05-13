@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { StatusForm, RoleForm, AddToTeamForm, EditProfileForm, RemoveMemberForm } from "./ProfileForms";
 import { removeTeamPositionAction } from "./actions";
+import type { Role } from "@/lib/nav";
 
 const AVATAR_COLORS = [
   "bg-indigo-500", "bg-amber-500", "bg-pink-500",
@@ -184,7 +185,7 @@ export default async function ProfilePage({
                 Admin actions
               </p>
               <StatusForm profileId={id} currentStatus={profile.status} />
-              <RoleForm profileId={id} currentRole={(profile.roles?.[0] ?? "member")} />
+              <RoleForm profileId={id} currentRoles={(profile.roles as Role[]) ?? ["member"]} />
               <RemoveMemberForm profileId={id} />
             </div>
           )}

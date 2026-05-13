@@ -3,6 +3,8 @@ export type CsvRow = {
   email: string;
   phone: string;
   teams: string[];
+  roles?: string;
+  role?: string;
 };
 
 export type CsvParseResult = {
@@ -30,6 +32,8 @@ export function parseCsv(text: string): CsvParseResult {
   const emailIdx = headers.indexOf("email");
   const phoneIdx = headers.indexOf("phone");
   const teamsIdx = headers.indexOf("teams");
+  const rolesIdx = headers.indexOf("roles");
+  const roleIdx  = headers.indexOf("role");
 
   if (nameIdx === -1 || emailIdx === -1) {
     return {
@@ -52,6 +56,8 @@ export function parseCsv(text: string): CsvParseResult {
     const teams = teamsStr
       ? teamsStr.split("|").map((t) => t.trim()).filter(Boolean)
       : [];
+    const roles = rolesIdx >= 0 ? (cols[rolesIdx] ?? "") : "";
+    const role  = roleIdx >= 0 ? (cols[roleIdx] ?? "") : "";
 
     if (!name) {
       errors.push({ line: i + 1, message: "Missing name" });
@@ -62,7 +68,7 @@ export function parseCsv(text: string): CsvParseResult {
       continue;
     }
 
-    rows.push({ name, email, phone, teams });
+    rows.push({ name, email, phone, teams, ...(roles && { roles }), ...(role && { role }) });
   }
 
   return { rows, errors };

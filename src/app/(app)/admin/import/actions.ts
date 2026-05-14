@@ -10,7 +10,7 @@ const ALL_ROLES: Role[] = ["admin", "member", "logistics", "librarian", "roster_
 
 function parseRolesCell(raw: string | undefined | null): Role[] {
   if (!raw) return ["member"];
-  const parts = raw.split(",").map(s => s.trim().toLowerCase()).filter(Boolean);
+  const parts = raw.split("|").map(s => s.trim().toLowerCase()).filter(Boolean);
   const roles = parts.filter((r): r is Role => ALL_ROLES.includes(r as Role));
   if (!roles.includes("member")) roles.push("member");
   return roles;

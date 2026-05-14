@@ -1,5 +1,8 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
+import { config as loadEnv } from "dotenv";
+
+loadEnv({ path: path.resolve(__dirname, ".env.local") });
 
 export default defineConfig({
   test: {

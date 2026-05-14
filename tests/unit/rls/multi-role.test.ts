@@ -19,7 +19,11 @@ describe("Multi-role RLS smoke", () => {
   });
 
   it("admin profile has a roles array", async () => {
-    const { data: me, error } = await admin.from("profiles").select("id, roles").single();
+    const { data: me, error } = await admin
+      .from("profiles")
+      .select("id, roles")
+      .eq("email", "admin@commune.local")
+      .single();
     expect(error).toBeNull();
     expect(me).toBeTruthy();
     expect(Array.isArray(me!.roles)).toBe(true);
@@ -27,7 +31,11 @@ describe("Multi-role RLS smoke", () => {
   });
 
   it("admin can update its own profile roles", async () => {
-    const { data: me } = await admin.from("profiles").select("id").single();
+    const { data: me } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("email", "admin@commune.local")
+      .single();
     const { error } = await admin
       .from("profiles")
       .update({ roles: ["admin", "member"] })

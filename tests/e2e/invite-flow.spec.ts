@@ -50,7 +50,7 @@ test.describe("Invite → activate → login flow", () => {
     await page.getByLabel("Password").fill(newPassword);
     await page.getByRole("button", { name: "Sign in" }).click();
     await expect(page).toHaveURL("/dashboard");
-    await expect(page.getByRole("heading")).toContainText("Welcome, Test");
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Welcome, Test");
   });
 
   test("activation rejects reused tokens", async ({ page }) => {

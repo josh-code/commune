@@ -44,6 +44,18 @@ AS $$
   SELECT current_user_has_role('admin');
 $$;
 
+-- is_logistics_or_admin (0006_inventory.sql) — original body did
+-- `role IN ('admin','logistics)`; rewrite for the roles[] column.
+CREATE OR REPLACE FUNCTION public.is_logistics_or_admin()
+  RETURNS boolean
+  LANGUAGE sql
+  SECURITY DEFINER
+  STABLE
+  SET search_path = public
+AS $$
+  SELECT current_user_has_role('admin') OR current_user_has_role('logistics');
+$$;
+
 -- ── 5. Rewrite profiles RLS policies (currently delegated to is_admin()) ──────
 -- The policies already reference is_admin() so they will automatically use the
 -- updated function body — no DROP/CREATE needed for those three.

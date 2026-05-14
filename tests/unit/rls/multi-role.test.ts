@@ -55,4 +55,40 @@ describe("Multi-role RLS smoke", () => {
     expect(error).toBeNull();
     expect(data).toBe(false);
   });
+
+  // Regression: every role-helper function must run clean after the role→roles[]
+  // migration. is_logistics_or_admin() was missed in 0014's first pass — its body
+  // still referenced the dropped `role` column, erroring on every call (which broke
+  // all inventory_categories / inventory_items RLS policies that gate on it).
+  it("role-helper RPCs execute without referencing the dropped role column", async () => {
+    for (const fn of [
+      "is_admin",
+      "is_logistics_or_admin",
+      "is_hospitality_or_admin",
+      "is_media_or_admin",
+      "is_worship_write_allowed",
+      "is_librarian_or_admin",
+    ]) {
+      const { error } = await admin.rpc(fn);
+      expect(error, `${fn} should not error`).toBeNull();
+    }
+  });
+
+  it("admin can read and write inventory_categories (gated by is_logistics_or_admin)", async () => {
+    const name = `RLS Test Cat ${Date.now()}`;
+    const { error: insertError } = await admin
+      .from("inventory_categories")
+      .insert({ name });
+    expect(insertError).toBeNull();
+
+    const { data, error: readError } = await admin
+      .from("inventory_categories")
+      .select("id, name")
+      .eq("name", name);
+    expect(readError).toBeNull();
+    expect(data?.length).toBe(1);
+
+    // cleanup
+    if (data?.[0]) await admin.from("inventory_categories").delete().eq("id", data[0].id);
+  });
 });

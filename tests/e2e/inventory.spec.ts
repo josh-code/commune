@@ -20,7 +20,11 @@ test.describe("Inventory — admin flow", () => {
     const catName = `E2E Cat ${Date.now()}`;
     await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
-    await expect(page.locator('input[name="name"]').last()).toHaveValue(catName);
+    // Wait for the saved-category row's Delete button to appear — only renders
+    // post-server-commit, so this is a real sync point (the previous .last().toHaveValue
+    // assertion was a no-op on an empty table: the only input[name=name] was the
+    // input we just typed into, so the assertion passed at t=0 without confirming save).
+    await expect(page.getByRole("button", { name: "Delete" }).first()).toBeVisible();
 
     await page.goto("/inventory/manage/items/new");
     await page.locator('input[name="name"]').fill("E2E Test Chairs");

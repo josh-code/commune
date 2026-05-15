@@ -58,6 +58,8 @@ test.describe("Inventory — reservation flow", () => {
     const catName = `Auto ${Date.now()}`;
     await page.getByPlaceholder("e.g. AV & Tech").fill(catName);
     await page.getByRole("button", { name: "Add" }).click();
+    // Real post-commit sync (see admin-flow test for the rationale).
+    await expect(page.getByRole("button", { name: "Delete" }).first()).toBeVisible();
 
     // Create an auto-confirm item
     await page.goto("/inventory/manage/items/new");

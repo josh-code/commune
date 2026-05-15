@@ -1,12 +1,24 @@
 import { test, expect } from "@playwright/test";
 
-// Helpers — re-use the admin auth state set up in other e2e tests
-// (assumes storageState: "tests/e2e/.auth/admin.json" is configured in playwright.config.ts)
+async function loginAsAdmin(page: import("@playwright/test").Page) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("admin@commune.local");
+  await page.getByLabel("Password").fill("commune-admin-dev");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/dashboard");
+}
+
+async function loginAsMember(page: import("@playwright/test").Page) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("member@commune.local");
+  await page.getByLabel("Password").fill("test-pass-dev");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/dashboard");
+}
 
 test.describe("Team management", () => {
-  test.use({ storageState: "tests/e2e/.auth/admin.json" });
-
   test("admin adds a position to a team and assigns a member", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/admin/teams");
     await expect(page.getByText("Worship")).toBeVisible();
 
@@ -27,9 +39,8 @@ test.describe("Team management", () => {
 });
 
 test.describe("Service creation", () => {
-  test.use({ storageState: "tests/e2e/.auth/admin.json" });
-
   test("admin creates a service and is redirected to the roster builder", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/roster/new");
     await page.getByLabel("Service name").fill("E2E Test Service");
     await page.getByLabel("Date").fill("2030-12-25");
@@ -46,9 +57,8 @@ test.describe("Service creation", () => {
 });
 
 test.describe("Publish and member schedule", () => {
-  test.use({ storageState: "tests/e2e/.auth/admin.json" });
-
   test("roster list shows services with status badges", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/roster");
     // At minimum the page should load and show the "New service" button
     await expect(page.getByRole("link", { name: "+ New service" })).toBeVisible();
@@ -56,15 +66,15 @@ test.describe("Publish and member schedule", () => {
 });
 
 test.describe("Schedule page (member)", () => {
-  test.use({ storageState: "tests/e2e/.auth/member.json" });
-
   test("member sees empty assignments and can view unavailability checklist", async ({ page }) => {
+    await loginAsMember(page);
     await page.goto("/schedule");
     await expect(page.getByText("My Schedule")).toBeVisible();
     await expect(page.getByText("Services I can't make")).toBeVisible();
   });
 
   test("member can mark a service unavailable", async ({ page }) => {
+    await loginAsMember(page);
     // Requires at least one upcoming service to exist
     await page.goto("/schedule");
     const checkboxes = page.locator('input[type="checkbox"]');

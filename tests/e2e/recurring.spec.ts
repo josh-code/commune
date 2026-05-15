@@ -1,10 +1,25 @@
 // tests/e2e/recurring.spec.ts
 import { test, expect } from "@playwright/test";
 
-test.describe("Service templates", () => {
-  test.use({ storageState: "tests/e2e/.auth/admin.json" });
+async function loginAsAdmin(page: import("@playwright/test").Page) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("admin@commune.local");
+  await page.getByLabel("Password").fill("commune-admin-dev");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/dashboard");
+}
 
+async function loginAsMember(page: import("@playwright/test").Page) {
+  await page.goto("/login");
+  await page.getByLabel("Email").fill("member@commune.local");
+  await page.getByLabel("Password").fill("test-pass-dev");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page).toHaveURL("/dashboard");
+}
+
+test.describe("Service templates", () => {
   test("admin creates a weekly template and services are generated", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/roster/templates/new");
     await expect(page.getByText("New recurring service")).toBeVisible();
 
@@ -20,25 +35,27 @@ test.describe("Service templates", () => {
   });
 
   test("templates page shows Generate 8 more button", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/roster/templates");
     await expect(page.getByRole("button", { name: "Generate 8 more" }).first()).toBeVisible();
   });
 
   test("roster list page shows templates shortcut", async ({ page }) => {
+    await loginAsAdmin(page);
     await page.goto("/roster");
     await expect(page.getByRole("link", { name: /View templates/ })).toBeVisible();
   });
 });
 
 test.describe("Date range unavailability (member)", () => {
-  test.use({ storageState: "tests/e2e/.auth/member.json" });
-
   test("member sees Dates I'm away section on schedule page", async ({ page }) => {
+    await loginAsMember(page);
     await page.goto("/schedule");
     await expect(page.getByText("Dates I'm away")).toBeVisible();
   });
 
   test("member can add and remove a date range", async ({ page }) => {
+    await loginAsMember(page);
     await page.goto("/schedule");
 
     // Add a range

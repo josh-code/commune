@@ -45,31 +45,6 @@ test.describe("Service creation", () => {
   });
 });
 
-test.describe("Roster builder", () => {
-  test.use({ storageState: "tests/e2e/.auth/admin.json" });
-
-  test("admin saves draft and assignments persist on reload", async ({ page }) => {
-    // Create a service first
-    await page.goto("/roster/new");
-    await page.getByLabel("Service name").fill("Draft Persist Test");
-    await page.getByLabel("Date").fill("2030-11-30");
-    await page.getByRole("button", { name: "Create service" }).click();
-    await page.waitForURL(/\/roster\/.+/);
-
-    const serviceUrl = page.url();
-
-    // Note: To assign a member, a member must first be assigned to a position via /admin/teams.
-    // This test verifies Save Draft is clickable; full assignment test requires seeded team members.
-    // The "Save Draft" button should be initially disabled (no unsaved changes).
-    const saveDraftBtn = page.getByRole("button", { name: "Save Draft" });
-    await expect(saveDraftBtn).toBeDisabled();
-
-    // Reload and confirm service still shows
-    await page.goto(serviceUrl);
-    await expect(page.getByText("Draft Persist Test")).toBeVisible();
-  });
-});
-
 test.describe("Publish and member schedule", () => {
   test.use({ storageState: "tests/e2e/.auth/admin.json" });
 

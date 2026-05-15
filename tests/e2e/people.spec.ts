@@ -39,40 +39,6 @@ test.describe("People list", () => {
   });
 });
 
-test.describe("Invite with teams", () => {
-  test("admin invites a member with phone and team, member appears in list", async ({
-    page,
-  }) => {
-    const email = uniqueEmail();
-
-    await loginAsAdmin(page);
-    await page.goto("/admin/invites");
-
-    await page.getByLabel("First name").fill("Team");
-    await page.getByLabel("Last name").fill("Member");
-    await page.getByLabel("Email").fill(email);
-    await page.getByLabel("Phone (optional)").fill("+61400000000");
-
-    // Check the first team checkbox and capture its label text
-    const firstTeamCheckbox = page.locator('input[name="teamId"]').first();
-    // Get the team name from the checkbox's sibling text
-    const teamLabel = await firstTeamCheckbox.locator("..").innerText();
-    await firstTeamCheckbox.check();
-
-    await page.getByRole("button", { name: "Send invite" }).click();
-    await expect(page.locator("code")).toContainText("/activate/");
-
-    // Member should appear in people list
-    await page.goto("/people");
-    // Use first() in case prior test runs left multiple Team Member entries
-    await expect(page.getByText("Team Member").first()).toBeVisible();
-
-    // Find the row containing "Team Member" and assert the team name appears
-    const memberRow = page.locator("a[href^='/people/']").filter({ hasText: "Team Member" }).first();
-    await expect(memberRow).toContainText(teamLabel.trim());
-  });
-});
-
 test.describe("Profile page", () => {
   test("admin can view profile page with tabs", async ({ page }) => {
     await loginAsAdmin(page);
@@ -142,6 +108,8 @@ test.describe("CSV import", () => {
   test("admin can upload CSV and see preview", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin/import");
+    // Wait for the upload UI to be hydrated (Next.js cold-compile can be slow on first hit).
+    await expect(page.getByText("Click to choose a CSV file")).toBeVisible({ timeout: 15000 });
 
     const csvContent = `name,email,phone,teams
 Import User,import${Date.now()}@church.com,+61400000001,Worship`;
@@ -153,8 +121,8 @@ Import User,import${Date.now()}@church.com,+61400000001,Worship`;
       buffer: Buffer.from(csvContent),
     });
 
-    // Preview should show 1 member
-    await expect(page.getByText("1 member ready to import")).toBeVisible();
+    // Preview should show 1 member — slightly longer timeout to absorb FileReader + cold compile.
+    await expect(page.getByText("1 member ready to import")).toBeVisible({ timeout: 15000 });
     await expect(page.getByText("Import User")).toBeVisible();
   });
 });

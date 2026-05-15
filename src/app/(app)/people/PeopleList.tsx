@@ -4,15 +4,17 @@ import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Database } from "@/types/database";
 
 type Team = { id: string; name: string; color: string };
+type ProfileRole = Database["public"]["Enums"]["profile_role"];
 
 export type MemberRow = {
   id: string;
   first_name: string;
   last_name: string;
   email: string;
-  role: "admin" | "member" | "logistics";
+  roles: ProfileRole[];
   status: "invited" | "active" | "on_leave" | "left";
   teams: Team[];
 };
@@ -149,7 +151,7 @@ export function PeopleList({ members, teams }: PeopleListProps) {
                 {m.first_name} {m.last_name}
               </div>
               <div className="text-xs text-slate-500 capitalize truncate">
-                {m.role}
+                {m.roles?.join(", ") ?? ""}
                 {m.teams.length > 0 && ` · ${m.teams.map((t) => t.name).join(", ")}`}
               </div>
             </div>

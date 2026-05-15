@@ -1,10 +1,12 @@
 // src/app/(app)/dashboard/page.tsx
 import Link from "next/link";
 import { Boxes, Bell } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { cn } from "@/lib/utils";
 import { confirmAction, declineAction } from "../schedule/actions";
+import { RecentNotificationsCard } from "@/components/dashboard/RecentNotificationsCard";
+import type { Notification } from "@/lib/notifications";
 
 const SLOT_STATUS_STYLES: Record<string, string> = {
   pending:   "bg-amber-100 text-amber-700",
@@ -17,6 +19,14 @@ export default async function DashboardPage() {
   const user = await requireUser();
   const supabase = await createClient();
   const today = new Date().toISOString().split("T")[0];
+
+  // Fetch 5 most-recent notifications (RLS limits to own rows)
+  const { data: notifData } = await supabase
+    .from("notifications")
+    .select("id, type, payload, read_at, created_at")
+    .order("created_at", { ascending: false })
+    .limit(5);
+  const recent = (notifData ?? []) as Notification[];
 
   // Fetch my next 3 upcoming published slots
   const { data: slots } = await supabase
@@ -51,7 +61,7 @@ export default async function DashboardPage() {
     .order("start_date");
 
   // Staff alerts
-  const isStaff = user.role === "admin" || user.role === "logistics";
+  const isStaff = has(user, "admin", "logistics");
   let pendingApprovalCount = 0;
   let overdueCount = 0;
   if (isStaff) {
@@ -68,8 +78,10 @@ export default async function DashboardPage() {
     <div className="space-y-6 max-w-2xl">
       <div>
         <h1 className="text-2xl font-semibold text-slate-900">Welcome, {user.firstName}</h1>
-        <p className="text-sm text-slate-500 mt-1 capitalize">{user.role}</p>
+        <p className="text-sm text-slate-500 mt-1 capitalize">{user.roles.join(", ")}</p>
       </div>
+
+      <RecentNotificationsCard notifications={recent} />
 
       {/* Inventory: my reservations */}
       {(myInvRes ?? []).length > 0 && (

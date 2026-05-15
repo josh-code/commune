@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 // ─── Update own contact fields (or full update for admin) ───────────────────
@@ -30,7 +30,7 @@ export async function updateProfileAction(
   formData: FormData,
 ): Promise<UpdateProfileState> {
   const viewer = await requireUser();
-  const isAdmin = viewer.role === "admin";
+  const isAdmin = has(viewer, "admin");
   const isOwn = viewer.id === profileId;
 
   if (!isAdmin && !isOwn) {
@@ -95,7 +95,7 @@ export async function updateStatusAction(
   formData: FormData,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   const status = formData.get("status") as string;
   if (!statusValues.includes(status as (typeof statusValues)[number])) return;
 
@@ -106,25 +106,31 @@ export async function updateStatusAction(
   revalidatePath("/people");
 }
 
-// ─── Admin: update role ──────────────────────────────────────────────────────
+// ─── Admin: update roles ─────────────────────────────────────────────────────
 
-const roleValues = ["member", "logistics", "admin"] as const;
+import type { Role } from "@/lib/nav";
 
-export async function updateRoleAction(
+const ALL_ROLES: Role[] = ["admin", "member", "logistics", "librarian", "roster_maker"];
+
+export async function updateRolesAction(
   profileId: string,
   formData: FormData,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
-  if (profileId === u.id) throw new Error("Cannot change your own role.");
-  const role = formData.get("role") as string;
-  if (!roleValues.includes(role as (typeof roleValues)[number])) return;
+  if (!u.roles.includes("admin")) throw new Error("Not authorised.");
+
+  const submitted = formData.getAll("roles") as string[];
+  const roles = submitted.filter((r): r is Role => ALL_ROLES.includes(r as Role));
+  // Always include 'member' as the baseline so a profile is never role-less.
+  if (!roles.includes("member")) roles.push("member");
 
   const supabase = await createClient();
-  const { error } = await supabase.from("profiles").update({ role: role as (typeof roleValues)[number] }).eq("id", profileId);
+  const { error } = await supabase
+    .from("profiles")
+    .update({ roles })
+    .eq("id", profileId);
   if (error) throw new Error(error.message);
   revalidatePath(`/people/${profileId}`);
-  revalidatePath("/people");
 }
 
 // ─── Admin: add team + position membership ───────────────────────────────────
@@ -134,7 +140,7 @@ export async function addTeamPositionAction(
   formData: FormData,
 ): Promise<{ error?: string }> {
   const u = await requireUser();
-  if (u.role !== "admin") return { error: "Not authorised." };
+  if (!has(u, "admin")) return { error: "Not authorised." };
   const teamId     = formData.get("teamId")     as string;
   const positionId = formData.get("positionId") as string;
   const teamRole   = (formData.get("teamRole")  as string) ?? "member";
@@ -159,7 +165,7 @@ export async function removeTeamPositionAction(
   positionId: string,
 ): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   const supabase = await createClient();
   await supabase
     .from("team_member_positions")
@@ -173,7 +179,7 @@ export async function removeTeamPositionAction(
 
 export async function removeMemberAction(profileId: string): Promise<void> {
   const u = await requireUser();
-  if (u.role !== "admin") throw new Error("Not authorised.");
+  if (!has(u, "admin")) throw new Error("Not authorised.");
   if (profileId === u.id) throw new Error("Cannot remove yourself.");
 
   const supabase = await createClient();

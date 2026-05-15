@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { calculateAvailability } from "@/lib/inventory";
 
@@ -39,7 +39,7 @@ export async function createReservationAction(itemId: string, formData: FormData
   const requested = item.tracked_individually ? 1 : quantity;
   if (available < requested) return;
 
-  const isStaff = user.role === "admin" || user.role === "logistics";
+  const isStaff = has(user, "admin", "logistics");
   const status = item.approval_required && !isStaff ? "pending" : "approved";
 
   await supabase.from("inventory_reservations").insert({

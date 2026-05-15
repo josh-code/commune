@@ -5,11 +5,12 @@ import Link from "next/link";
 import {
   updateProfileAction,
   updateStatusAction,
-  updateRoleAction,
+  updateRolesAction,
   removeMemberAction,
   addTeamPositionAction,
   type UpdateProfileState,
 } from "./actions";
+import type { Role } from "@/lib/nav";
 
 // ── Status form ──────────────────────────────────────────────────────────────
 
@@ -41,28 +42,43 @@ export function StatusForm({
 
 // ── Role form ────────────────────────────────────────────────────────────────
 
+const ROLE_OPTIONS: { value: Role; label: string }[] = [
+  { value: "admin",        label: "Admin" },
+  { value: "logistics",    label: "Logistics" },
+  { value: "librarian",    label: "Librarian" },
+  { value: "roster_maker", label: "Roster maker" },
+];
+
 export function RoleForm({
   profileId,
-  currentRole,
+  currentRoles,
 }: {
   profileId: string;
-  currentRole: string;
+  currentRoles: Role[];
 }) {
   return (
-    <form action={updateRoleAction.bind(null, profileId)}>
-      <label className="text-xs text-slate-600">
-        Role
-        <select
-          name="role"
-          defaultValue={currentRole}
-          className="ml-2 text-xs border border-slate-200 rounded px-2 py-1 bg-white"
-          onChange={(e) => (e.target.form as HTMLFormElement).requestSubmit()}
-        >
-          <option value="member">Member</option>
-          <option value="logistics">Logistics</option>
-          <option value="admin">Admin</option>
-        </select>
-      </label>
+    <form action={updateRolesAction.bind(null, profileId)} className="text-xs text-slate-600">
+      <div className="mb-1 font-medium">Roles</div>
+      <div className="flex flex-wrap gap-x-3 gap-y-1">
+        {/* Member is the baseline — always present, not editable here */}
+        <label className="flex items-center gap-1 text-slate-400">
+          <input type="checkbox" checked disabled className="accent-indigo-600" />
+          Member
+        </label>
+        {ROLE_OPTIONS.map(({ value, label }) => (
+          <label key={value} className="flex items-center gap-1">
+            <input
+              type="checkbox"
+              name="roles"
+              value={value}
+              defaultChecked={currentRoles.includes(value)}
+              className="accent-indigo-600"
+              onChange={(e) => (e.target.form as HTMLFormElement).requestSubmit()}
+            />
+            {label}
+          </label>
+        ))}
+      </div>
     </form>
   );
 }

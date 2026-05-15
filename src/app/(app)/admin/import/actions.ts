@@ -4,6 +4,17 @@ import { requireAdmin } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { generateInviteToken } from "@/lib/invites";
 import type { CsvRow } from "@/lib/csv";
+import type { Role } from "@/lib/nav";
+
+const ALL_ROLES: Role[] = ["admin", "member", "logistics", "librarian", "roster_maker"];
+
+function parseRolesCell(raw: string | undefined | null): Role[] {
+  if (!raw) return ["member"];
+  const parts = raw.split("|").map(s => s.trim().toLowerCase()).filter(Boolean);
+  const roles = parts.filter((r): r is Role => ALL_ROLES.includes(r as Role));
+  if (!roles.includes("member")) roles.push("member");
+  return roles;
+}
 
 export type ImportResult = {
   created: number;
@@ -96,7 +107,7 @@ export async function bulkImportAction(formData: FormData): Promise<ImportResult
       last_name:         lastName,
       email:             row.email,
       phone:             row.phone || null,
-      role:              "member",
+      roles:             parseRolesCell(row.roles ?? row.role),
       status:            "invited",
       invite_token:      token,
       invite_expires_at: expiresAt.toISOString(),

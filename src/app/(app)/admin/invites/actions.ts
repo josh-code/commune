@@ -83,7 +83,7 @@ export async function sendInviteAction(
       last_name:         parsed.data.lastName,
       email:             parsed.data.email,
       phone:             parsed.data.phone ?? null,
-      role:              "member",
+      roles:             ["member"],
       status:            "invited",
       invite_token:      token,
       invite_expires_at: expiresAt.toISOString(),

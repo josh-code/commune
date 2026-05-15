@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireUser } from "@/lib/auth";
+import { requireUser, has } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, ArrowLeft } from "lucide-react";
 import { BookActions } from "./BookActions";
@@ -98,7 +98,7 @@ export default async function BookDetailPage({
             queueLength={queueCount?.length ?? 0}
           />
 
-          {(user.role === "admin" || user.role === "librarian") && (
+          {has(user, "admin", "librarian") && (
             <Link
               href={`/library/manage/books/${book_id}`}
               className="inline-block text-xs text-indigo-600 hover:text-indigo-800 mt-2"

@@ -48,8 +48,9 @@ export default function ImportPage() {
       <Link href="/admin" className="text-sm text-slate-500 hover:text-slate-900">← Admin</Link>
       <h1 className="text-xl font-semibold text-slate-900 mt-1 mb-2">Import members</h1>
       <p className="text-sm text-slate-500 mb-6">
-        Upload a CSV with columns: <code className="bg-slate-100 px-1 rounded">name, email, phone, teams</code>.
-        Teams are pipe-separated (e.g. <code className="bg-slate-100 px-1 rounded">Worship|Sound</code>).
+        Upload a CSV with columns: <code className="bg-slate-100 px-1 rounded">name, email, phone, teams, roles</code>.
+        Teams and roles are pipe-separated (e.g. <code className="bg-slate-100 px-1 rounded">Worship|Sound</code>, <code className="bg-slate-100 px-1 rounded">librarian|logistics</code>).
+        Roles default to <code className="bg-slate-100 px-1 rounded">member</code> if omitted.
       </p>
 
       {step === "upload" && (

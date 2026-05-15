@@ -42,16 +42,17 @@ test.describe("Date range unavailability (member)", () => {
     await page.goto("/schedule");
 
     // Add a range
-    await page.getByLabel("From").fill("2030-08-01");
-    await page.getByLabel("To").fill("2030-08-14");
+    await page.getByLabel("From", { exact: true }).fill("2030-08-01");
+    await page.getByLabel("To", { exact: true }).fill("2030-08-14");
     await page.getByPlaceholder("Reason (optional)").fill("Holiday");
     await page.getByRole("button", { name: "Mark unavailable" }).click();
 
     // Range appears in list
     await expect(page.getByText("Holiday")).toBeVisible();
 
-    // Remove it
-    await page.getByRole("button", { name: "Remove" }).first().click();
+    // Remove it — select the range row via "Select all" then click Delete
+    await page.getByLabel("Select all").check();
+    await page.getByRole("button", { name: /Delete/ }).click();
     await expect(page.getByText("Holiday")).not.toBeVisible();
   });
 });

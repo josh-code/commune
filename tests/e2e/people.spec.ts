@@ -108,6 +108,8 @@ test.describe("CSV import", () => {
   test("admin can upload CSV and see preview", async ({ page }) => {
     await loginAsAdmin(page);
     await page.goto("/admin/import");
+    // Wait for the upload UI to be hydrated (Next.js cold-compile can be slow on first hit).
+    await expect(page.getByText("Click to choose a CSV file")).toBeVisible({ timeout: 15000 });
 
     const csvContent = `name,email,phone,teams
 Import User,import${Date.now()}@church.com,+61400000001,Worship`;
@@ -119,8 +121,8 @@ Import User,import${Date.now()}@church.com,+61400000001,Worship`;
       buffer: Buffer.from(csvContent),
     });
 
-    // Preview should show 1 member
-    await expect(page.getByText("1 member ready to import")).toBeVisible();
+    // Preview should show 1 member — slightly longer timeout to absorb FileReader + cold compile.
+    await expect(page.getByText("1 member ready to import")).toBeVisible({ timeout: 15000 });
     await expect(page.getByText("Import User")).toBeVisible();
   });
 });

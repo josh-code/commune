@@ -163,13 +163,13 @@ export default async function SchedulePage() {
         <form action={addRangeAction} className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">From</label>
-              <input type="date" name="start_date" required
+              <label htmlFor="unavail-start-date" className="text-xs font-medium text-slate-600">From</label>
+              <input id="unavail-start-date" type="date" name="start_date" required
                 className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-slate-600">To</label>
-              <input type="date" name="end_date" required
+              <label htmlFor="unavail-end-date" className="text-xs font-medium text-slate-600">To</label>
+              <input id="unavail-end-date" type="date" name="end_date" required
                 className="w-full text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-500/20" />
             </div>
           </div>

@@ -151,12 +151,12 @@ max_indexes = 5
 enabled = true
 # The base URL of your website. Used as an allow-list for redirects and for constructing URLs used
 # in emails.
-# NOTE: For local dev this is localhost. For prod the linked Supabase project's
-# site_url is "https://commune-alpha.vercel.app" (set via `supabase config push`
-# on 2026-05-19 — see commit history). If you run `supabase config push` again,
-# REVIEW THE DIFF: a naive push here would revert prod's site_url to localhost
-# and break magic-link / invite emails for production users.
-site_url = "http://127.0.0.1:3000"
+# site_url is intentionally the PROD URL so that `supabase config push`
+# is idempotent for prod. Local dev emails (Mailpit) will also link to prod —
+# fine because local devs sign in with the seeded admin password, not magic links.
+# If you need local magic-link to point to localhost, temporarily edit this
+# before `supabase start` (but never push that to prod).
+site_url = "https://commune-alpha.vercel.app"
 # Wide allow-list covers prod + local. Pushing this to prod is safe (additive).
 additional_redirect_urls = ["https://commune-alpha.vercel.app", "https://commune-alpha.vercel.app/auth/callback", "http://localhost:3000", "http://localhost:3000/auth/callback", "http://127.0.0.1:3000", "http://127.0.0.1:3000/auth/callback"]
 # How long tokens are valid for, in seconds. Defaults to 3600 (1 hour), maximum 604,800 (1 week).
